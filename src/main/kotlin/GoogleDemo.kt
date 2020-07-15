@@ -45,13 +45,14 @@ object GoogleDemo {
         }
 
         val sessionsMetric = Metric().setExpression("ga:pageviews").setAlias("sidevisninger")
+        val pageTime = Metric().setExpression("ga:avgTimeOnPage").setAlias("Gjennomsnittstid")
         val pageTitleDimension = Dimension().setName("ga:pageTitle")
         val pagePathDimension = Dimension().setName("ga:pagePath")
 
         val request = ReportRequest()
             .setViewId(VIEW_ID)
             .setDateRanges(listOf(dateRange))
-            .setMetrics(listOf(sessionsMetric))
+            .setMetrics(listOf(sessionsMetric,pageTime))
             .setDimensions(listOf(pageTitleDimension, pagePathDimension))
 
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
@@ -70,7 +71,9 @@ object GoogleDemo {
                 val dimensions = row.dimensions
                 val metrics = row.metrics
                 println("${dimensions[1].split("/").last()}\t${dimensions[0]} - " +
-                        "${metricHeader.first().name}: ${metrics.first().getValues().first()}")
+                            "${metricHeader[0].name}: ${metrics.first().getValues()[0]} - " +
+                            "${metricHeader[1].name}: ${metrics.first().getValues()[1]}"
+                )
             }
         }
     }
