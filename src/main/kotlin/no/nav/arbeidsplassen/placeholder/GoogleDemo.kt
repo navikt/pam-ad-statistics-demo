@@ -1,13 +1,16 @@
 package no.nav.arbeidsplassen.placeholder
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
 import com.google.api.services.analyticsreporting.v4.model.*
+import com.google.auth.http.HttpCredentialsAdapter
+import com.google.auth.oauth2.GoogleCredentials
 import org.springframework.stereotype.Component
+
 
 private const val KEY_FILE_LOCATION = "/credentials.json"
 private const val VIEW_ID = "177785619"
@@ -18,20 +21,6 @@ class GoogleDemo {
 
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
-    /*
-    fun main(args: Array<String>) {
-        try {
-            val reportingService = initializeAnalyticsReporting()
-            println(reportingService.getReport(listOf("ga:pageviews", "ga:avgTimeOnPage"),
-                                       listOf("Sidevisninger", "Gj.tid"),
-                                       listOf("ga:pageTitle", "ga:pagePath", "ga:fullReferrer")).createJsonObject())
-
-            
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-     */
 
     fun returnStilling(id: String): Stilling? {
         val reportingService = initializeAnalyticsReporting()
@@ -47,17 +36,18 @@ class GoogleDemo {
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
-        val credential = GoogleCredential
+        val credential = GoogleCredentials
             .fromStream(
                 GoogleDemo::class.java.getResourceAsStream(
                     KEY_FILE_LOCATION
                 ))
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
-        return AnalyticsReporting.Builder(httpTransport,
-            JSON_FACTORY, credential)
-            .setApplicationName(APPLICATION_NAME).build()
+        val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
 
+        return AnalyticsReporting.Builder(httpTransport,
+            JSON_FACTORY, requestInitializer)
+            .setApplicationName(APPLICATION_NAME).build()
     }
 
     private fun AnalyticsReporting.getReport(metricExpressions: List<String>, aliases: List<String>, dimensionNames: List<String>): GetReportsResponse {
@@ -120,6 +110,7 @@ class GoogleDemo {
             val rows = report.data.rows
             if (rows == null) {
                 println("No data found for $VIEW_ID")
+                //throw noe exception eller return emptymap
             }
             rows?.forEach { row ->
                 val dimensions = row.dimensions
