@@ -1,3 +1,5 @@
+package no.nav.arbeidsplassen.placeholder
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.HttpTransport
@@ -16,7 +18,8 @@ object GoogleDemo {
     @JvmStatic
     fun main(args: Array<String>) {
         try {
-            val reportingService = initializeAnalyticsReporting()
+            val reportingService =
+                initializeAnalyticsReporting()
             reportingService.getReport()
                 .prettyPrint()
             
@@ -30,10 +33,14 @@ object GoogleDemo {
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val credential = GoogleCredential
-            .fromStream(GoogleDemo::class.java.getResourceAsStream(KEY_FILE_LOCATION))
+            .fromStream(
+                GoogleDemo::class.java.getResourceAsStream(
+                    KEY_FILE_LOCATION
+                ))
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
-        return AnalyticsReporting.Builder(httpTransport, JSON_FACTORY, credential)
+        return AnalyticsReporting.Builder(httpTransport,
+            JSON_FACTORY, credential)
             .setApplicationName(APPLICATION_NAME).build()
 
     }
