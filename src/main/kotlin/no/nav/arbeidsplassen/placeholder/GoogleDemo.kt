@@ -21,14 +21,15 @@ class GoogleDemo {
 
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
-
-    fun returnStilling(id: String): Stilling? {
-        val reportingService = initializeAnalyticsReporting()
-        return reportingService.getReport(
+    private val nonUpdatingResponse = initializeAnalyticsReporting().getReport(
             listOf("ga:pageviews", "ga:avgTimeOnPage"),
             listOf("Sidevisninger", "Gj.tid"),
             listOf("ga:pageTitle", "ga:pagePath", "ga:fullReferrer")
-        ).createJsonObject()[id]
+    )
+
+
+    fun returnStilling(id: String): Stilling? {
+        return nonUpdatingResponse.createJsonObject()[id]
 
     }
 
