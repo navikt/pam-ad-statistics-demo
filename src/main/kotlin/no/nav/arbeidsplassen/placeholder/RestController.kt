@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class RestController {
 
-    @GetMapping(value = ["/{stillingspath}"], produces = ["text/plain"])
+    @GetMapping(value = ["/{stillingspath}"], produces = ["application/json"])
     fun getPath(@PathVariable("stillingspath") path: String): String {
-        return path
+        return "hei"
     }
 
     /*

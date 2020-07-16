@@ -18,10 +18,11 @@ object GoogleDemo {
     @JvmStatic
     fun main(args: Array<String>) {
         try {
-            val reportingService =
-                initializeAnalyticsReporting()
-            reportingService.getReport()
-                .prettyPrint()
+            val reportingService = initializeAnalyticsReporting()
+            println(reportingService.getReport(listOf("ga:pageviews", "ga:avgTimeOnPage"),
+                                       listOf("Sidevisninger", "Gj.tid"),
+                                       listOf("ga:pageTitle", "ga:pagePath", "ga:fullReferrer")).createJsonObject())
+
             
         } catch (e: Exception) {
             e.printStackTrace()
@@ -45,22 +46,35 @@ object GoogleDemo {
 
     }
 
-    private fun AnalyticsReporting.getReport(): GetReportsResponse {
+    private fun AnalyticsReporting.getReport(metricExpressions: List<String>, aliases: List<String>, dimensionNames: List<String>): GetReportsResponse {
         val dateRange = DateRange().apply {
             startDate = "1DaysAgo"
             endDate = "today"
         }
+        val metrics: MutableList<Metric> = mutableListOf<Metric>()
+        val dimensions: MutableList<Dimension> = mutableListOf<Dimension>()
+        for (i in metricExpressions.indices) {
+            metrics.add(Metric().setExpression(metricExpressions[i]).setAlias(aliases[i]))
+        }
+        dimensionNames.forEach{
+            dimensions.add(Dimension().setName(it))
+        }
 
+        /*
         val sessionsMetric = Metric().setExpression("ga:pageviews").setAlias("sidevisninger")
         val pageTime = Metric().setExpression("ga:avgTimeOnPage").setAlias("Gjennomsnittstid")
         val pageTitleDimension = Dimension().setName("ga:pageTitle")
         val pagePathDimension = Dimension().setName("ga:pagePath")
+        val referralDimension = Dimension().setName("ga:fullReferrer")
+
+         */
 
         val request = ReportRequest()
             .setViewId(VIEW_ID)
             .setDateRanges(listOf(dateRange))
-            .setMetrics(listOf(sessionsMetric,pageTime))
-            .setDimensions(listOf(pageTitleDimension, pagePathDimension))
+            .setMetrics(metrics)
+            .setDimensions(dimensions)
+            .setFiltersExpression("ga:pagePath=~^/stillinger")
 
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
 
@@ -77,12 +91,33 @@ object GoogleDemo {
             rows?.forEach { row ->
                 val dimensions = row.dimensions
                 val metrics = row.metrics
-                println("${dimensions[1].split("/").last()}\t${dimensions[0]} - " +
-                            "${metricHeader[0].name}: ${metrics.first().getValues()[0]} - " +
-                            "${metricHeader[1].name}: ${metrics.first().getValues()[1]}"
+                println(
+                        "${dimensions[1].split("/").last()}\t${dimensions[0]} - " +
+                        "${metricHeader[0].name}: ${metrics.first().getValues()[0]} - " +
+                        "${metricHeader[1].name}: ${metrics.first().getValues()[1]} - ${dimensions[2]}"
                 )
             }
         }
     }
+
+    private fun GetReportsResponse.createJsonObject(): Map<String, Stilling> {
+        val testMap = mutableMapOf<String, Stilling>()
+        reports.forEach {report ->
+            val header = report.columnHeader
+            val metricHeader = header.metricHeader.metricHeaderEntries
+            val rows = report.data.rows
+            if (rows == null) {
+                println("No data found for $VIEW_ID")
+            }
+            rows?.forEach{row ->
+                val dimensions = row.dimensions
+                val metrics = row.metrics
+                val stilling = Stilling(dimensions[0], metrics.first().getValues()[0], metrics.first().getValues()[1], listOf(dimensions[2]))
+                testMap[dimensions[1].split("/").last()] = stilling
+            }
+        }
+        return testMap
+    }
+
 
 }
