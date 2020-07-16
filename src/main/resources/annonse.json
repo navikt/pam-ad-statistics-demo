@@ -1,0 +1,50 @@
+{
+  "Stillinger": [{
+      "ID": "49823y89hds89489312",
+      "tittel": "jobb",
+      "sidevisninger": 3,
+      "AVG": 12,
+      "referral": [
+        "nav",
+        "google",
+        "facebook"
+      ],
+      "date": {
+        "date1": 4,
+        "date2": 3
+      },
+      "region": {
+        "oslo": 2,
+        "finnmark": 3
+      },
+      "device": {
+        "pc": 2,
+        "tablet": 3,
+        "mobile": 10
+      }
+    },
+    {
+      "ID": "49823y89hds89489312",
+      "tittel": "jobb",
+      "sidevisninger": 3,
+      "AVG": 12,
+      "referral": [
+        "nav",
+        "google",
+        "facebook"
+      ],
+      "date": {
+        "date1": 4,
+        "date2": 3
+      },
+      "region": {
+        "oslo": 2,
+        "finnmark": 3
+      },
+      "device": {
+        "pc": 2,
+        "tablet": 3,
+        "mobile": 10
+      }
+    }]
+}
