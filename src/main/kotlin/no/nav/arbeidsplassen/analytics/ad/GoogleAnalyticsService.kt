@@ -70,14 +70,16 @@ class GoogleAnalyticsService {
     }
 
     private fun GetReportsResponse.toAdDto() : AdDto {
-        return reports.first().let { report ->
+        return reports.first().data.rows.let { row ->
             AdDto(
-                sidevisninger = report.data.rows.mapNotNull { it.metrics.first().getValues().first().toInt() }.sum(),
-                average = report.data.rows.mapNotNull { it.metrics.first().getValues()[1].toDouble() }.average(),
-                referrals = report.data.rows.mapNotNull { it.dimensions[1] to it.metrics.first().getValues().first().toInt()}.toMap()
+                sidevisninger = row.mapNotNull { it.getMetric().first().toInt() }.sum(),
+                average = row.mapNotNull { it.getMetric()[1].toDouble() }.average(),
+                referrals = row.mapNotNull { it.dimensions.last() to it.getMetric().first().toInt() }.toMap()
             )
         }
     }
+
+    private fun ReportRow.getMetric() = metrics.first().getValues()
 
     companion object {
         private const val KEY_FILE_LOCATION = "/credentials.json"
@@ -85,6 +87,5 @@ class GoogleAnalyticsService {
         private const val APPLICATION_NAME = "Analytics Reporting Demo"
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
     }
-
 
 }
