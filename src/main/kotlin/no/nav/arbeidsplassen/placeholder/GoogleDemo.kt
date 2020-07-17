@@ -21,8 +21,7 @@ class GoogleDemo {
 
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
-
-    fun returnStilling(id: String): Stilling? {
+    fun returnStilling(id: String): AdDto? {
         val returnting = initializeAnalyticsReporting().getReport(
                 listOf("ga:pageviews", "ga:avgTimeOnPage"),
                 listOf("Sidevisninger", "Gj.tid"),
@@ -84,28 +83,9 @@ class GoogleDemo {
 
     }
 
-    private fun GetReportsResponse.prettyPrint() {
-        return reports.forEach { report ->
-            val header = report.columnHeader
-            val metricHeader = header.metricHeader.metricHeaderEntries
-            val rows = report.data.rows
-            if (rows == null) {
-                println("No data found for $VIEW_ID")
-            }
-            rows?.forEach { row ->
-                val dimensions = row.dimensions
-                val metrics = row.metrics
-                println(
-                        "${dimensions[1].split("/").last()}\t${dimensions[0]} - " +
-                        "${metricHeader[0].name}: ${metrics.first().getValues()[0]} - " +
-                        "${metricHeader[1].name}: ${metrics.first().getValues()[1]} - ${dimensions[2]}"
-                )
-            }
-        }
-    }
 
-    private fun GetReportsResponse.createJsonObject(): Map<String, Stilling> {
-        val testMap = mutableMapOf<String, Stilling>()
+    private fun GetReportsResponse.createJsonObject(): Map<String, AdDto> {
+        val testMap = mutableMapOf<String, AdDto>()
         reports.forEach {report ->
             val rows = report.data.rows
             if (rows == null) {
@@ -118,11 +98,10 @@ class GoogleDemo {
                 val key = dimensions[1].split("/").last()
                 if (testMap.containsKey(key)) {
                     testMap[key]?.referrals?.put(dimensions[2], metrics.first().getValues()[0].toInt())
-                    testMap[key]?.sidevisninger =
-                        testMap[key]?.sidevisninger?.plus(metrics.first().getValues()[0].toInt())
+                    testMap[key]?.sidevisninger = testMap[key]?.sidevisninger?.plus(metrics.first().getValues()[0].toInt()) ?: 0
                     testMap[key]?.avg?.add(metrics.first().getValues()[1].toDouble())
                 } else {
-                    val stilling = Stilling(
+                    val stilling = AdDto(
                         dimensions[0],
                         metrics.first().getValues()[0].toInt(),
                         mutableListOf(metrics.first().getValues()[1].toDouble()),

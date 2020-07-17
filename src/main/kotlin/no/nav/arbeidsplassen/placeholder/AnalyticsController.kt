@@ -5,10 +5,14 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class RestController(private val googleDemo: GoogleDemo) {
+class AnalyticsController(
+    private val googleDemo: GoogleDemo
+) {
 
     @GetMapping(value = ["/{stillingspath}"], produces = ["application/json"])
-    fun getPath(@PathVariable("stillingspath") path: String): Stilling? {
+    fun getAdAnalyticsData(
+        @PathVariable("stillingspath") path: String
+    ): AdDto? {
         return googleDemo.returnStilling(path)
     }
 
