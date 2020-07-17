@@ -1,4 +1,4 @@
-package no.nav.arbeidsplassen.placeholder
+package no.nav.arbeidsplassen.analytics
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

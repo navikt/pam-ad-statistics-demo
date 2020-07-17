@@ -1,9 +1,8 @@
-package no.nav.arbeidsplassen.placeholder
+package no.nav.arbeidsplassen.analytics.ad.dto
 
 data class AdDto(
-    var tittel: String = "",
     var sidevisninger: Int = 0,
-    var avg: MutableList<Double> = mutableListOf(),
+    var average: Double = 0.0,
     var referrals: MutableMap<String, Int> = mutableMapOf()
     /*
     var viewsOverTime: Map<String, String>,

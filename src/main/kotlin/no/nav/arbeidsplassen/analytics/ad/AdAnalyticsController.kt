@@ -1,19 +1,22 @@
-package no.nav.arbeidsplassen.placeholder
+package no.nav.arbeidsplassen.analytics.ad
 
+import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AnalyticsController(
-    private val googleDemo: GoogleDemo
+@RequestMapping("ad")
+class AdAnalyticsController(
+    private val googleAnalyticsService: GoogleAnalyticsService
 ) {
 
-    @GetMapping(value = ["/{stillingspath}"], produces = ["application/json"])
+    @GetMapping(value = ["{UUID}"])
     fun getAdAnalyticsData(
-        @PathVariable("stillingspath") path: String
+        @PathVariable("UUID") UUID: String
     ): AdDto? {
-        return googleDemo.returnStilling(path)
+        return googleAnalyticsService.fetchAnalyticsByAdId(UUID)
     }
 
     /*
