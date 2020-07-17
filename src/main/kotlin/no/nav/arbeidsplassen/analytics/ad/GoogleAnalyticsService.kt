@@ -10,6 +10,7 @@ import com.google.api.services.analyticsreporting.v4.model.*
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 
@@ -19,6 +20,7 @@ class GoogleAnalyticsService {
 
     private var analyticsReporting = initializeAnalyticsReporting()
 
+    @Cacheable(value=["DTOs"], key="#UUID")
     fun fetchAnalyticsByAdId(UUID: String): AdDto? {
         return analyticsReporting.getReport(
                 metricExpressions = listOf(
@@ -86,6 +88,9 @@ class GoogleAnalyticsService {
         private const val VIEW_ID = "177785619"
         private const val APPLICATION_NAME = "Analytics Reporting Demo"
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
+
+        //metrics and dimension
+
     }
 
 }
