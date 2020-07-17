@@ -21,15 +21,15 @@ class GoogleDemo {
 
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
-    private val nonUpdatingResponse = initializeAnalyticsReporting().getReport(
+    private val nonUpdatingMap = initializeAnalyticsReporting().getReport(
             listOf("ga:pageviews", "ga:avgTimeOnPage"),
             listOf("Sidevisninger", "Gj.tid"),
             listOf("ga:pageTitle", "ga:pagePath", "ga:fullReferrer")
-    )
+    ).createJsonObject()
 
 
     fun returnStilling(id: String): Stilling? {
-        return nonUpdatingResponse.createJsonObject()[id]
+        return nonUpdatingMap[id]
 
     }
 
