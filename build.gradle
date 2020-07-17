@@ -35,7 +35,7 @@ dependencies {
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
 }
 
-mainClassName = "no.nav.arbeidsplassen.placeholder.ApplicationKt"
+mainClassName = "no.nav.arbeidsplassen.analytics.ApplicationKt"
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

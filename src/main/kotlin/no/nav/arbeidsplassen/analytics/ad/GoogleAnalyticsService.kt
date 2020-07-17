@@ -71,17 +71,11 @@ class GoogleAnalyticsService {
 
     private fun GetReportsResponse.toAdDto() : AdDto {
         return reports.first().let { report ->
-            // TODO - Refactor
-            val referralsMap = mutableMapOf<String, Int>()
-            report.data.rows.mapNotNull { it.dimensions[1] }
-                .mapIndexedNotNull { idx, it -> referralsMap.put(it, report.data.rows[idx].metrics.first().getValues().first().toInt()) }
-
             AdDto(
                 sidevisninger = report.data.rows.mapNotNull { it.metrics.first().getValues().first().toInt() }.sum(),
                 average = report.data.rows.mapNotNull { it.metrics.first().getValues()[1].toDouble() }.average(),
-                referrals = referralsMap
+                referrals = report.data.rows.mapNotNull { it.dimensions[1] to it.metrics.first().getValues().first().toInt()}.toMap()
             )
-
         }
     }
 
