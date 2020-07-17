@@ -21,16 +21,15 @@ class GoogleDemo {
 
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
-    private val nonUpdatingMap = initializeAnalyticsReporting().getReport(
-            listOf("ga:pageviews", "ga:avgTimeOnPage"),
-            listOf("Sidevisninger", "Gj.tid"),
-            listOf("ga:pageTitle", "ga:pagePath", "ga:fullReferrer")
-    ).createJsonObject()
-
 
     fun returnStilling(id: String): Stilling? {
-        return nonUpdatingMap[id]
-
+        val returnting = initializeAnalyticsReporting().getReport(
+                listOf("ga:pageviews", "ga:avgTimeOnPage"),
+                listOf("Sidevisninger", "Gj.tid"),
+                listOf("ga:pageTitle", "ga:pagePath", "ga:fullReferrer"),
+                id
+        ).createJsonObject()
+        return returnting[id]
     }
 
 
@@ -51,7 +50,7 @@ class GoogleDemo {
             .setApplicationName(APPLICATION_NAME).build()
     }
 
-    private fun AnalyticsReporting.getReport(metricExpressions: List<String>, aliases: List<String>, dimensionNames: List<String>): GetReportsResponse {
+    private fun AnalyticsReporting.getReport(metricExpressions: List<String>, aliases: List<String>, dimensionNames: List<String>, key: String): GetReportsResponse {
         val dateRange = DateRange().apply {
             startDate = "1DaysAgo"
             endDate = "today"
@@ -79,7 +78,7 @@ class GoogleDemo {
             .setDateRanges(listOf(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
-            .setFiltersExpression("ga:pagePath=~^/stillinger")
+            .setFiltersExpression("ga:pagePath=~^/stillinger/stilling/${key}")
 
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
 

@@ -29,7 +29,7 @@ dependencies {
     implementation 'org.springframework:spring-aspects'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.17.1'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.6.0"
     
     compile 'com.google.apis:google-api-services-analyticsreporting:v4-rev20200210-1.30.10'
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
