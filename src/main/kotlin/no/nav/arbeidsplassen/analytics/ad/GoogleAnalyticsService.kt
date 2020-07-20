@@ -11,6 +11,7 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.core.SpringVersion
 import org.springframework.stereotype.Service
 
 
@@ -20,7 +21,7 @@ class GoogleAnalyticsService {
 
     private var analyticsReporting = initializeAnalyticsReporting()
 
-    @Cacheable(value=["DTOs"], key="#UUID")
+    @Cacheable(value=["DTOByUUID"], key="#UUID")
     fun fetchAnalyticsByAdId(UUID: String): AdDto? {
         return analyticsReporting.getReport(
                 metricExpressions = listOf(

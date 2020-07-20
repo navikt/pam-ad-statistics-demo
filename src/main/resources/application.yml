@@ -1,0 +1,32 @@
+management:
+  endpoint.health.enabled: true
+  endpoints:
+    prometheus.enabled: true
+    prometheus.web.enabled: true
+    web.exposure.include: health,info,status,metrics,prometheus,configprops,env,conditions,beans,auditevents,mappings
+  metrics:
+    web.server.auto-time-requests: true
+    distribution.percentiles-histogram.http.server.requests: true
+    distribution.percentiles-histogram.http.client.requests: true
+  health:
+    elasticsearch:
+      enabled: false
+spring:
+  metrics.web.server.auto-time-requests: true
+  task.scheduling.pool.size: 5
+  cache:
+    jcache:
+      config: ehcache.xml
+  main:
+    banner-mode: "off"
+    allow-bean-definition-overriding: true
+  profiles:
+    active: ${NAIS_CLUSTER_NAME:dev}
+
+server:
+  error:
+    whitelabel:
+      enabled: true
+    include-stacktrace: never
+  servlet:
+    context-path: /
