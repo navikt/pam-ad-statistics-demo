@@ -9,7 +9,6 @@ class AdAnalyticsController(
     private val googleAnalyticsService: GoogleAnalyticsService
 ) {
 
-    @CrossOrigin(origins = arrayOf("http://localhost:3000"))
     @GetMapping(value = ["{UUID}"])
     fun getAdAnalyticsData(
         @PathVariable("UUID") UUID: String
