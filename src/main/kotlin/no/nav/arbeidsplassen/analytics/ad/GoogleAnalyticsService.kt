@@ -23,12 +23,11 @@ class GoogleAnalyticsService {
 
     @Cacheable(value=["DTOByUUID"], key="#UUID")
     fun fetchAnalyticsByAdId(UUID: String): AdDto? {
-        //skal flytte denne til repo component
-        val map = analyticsReporting.getReport(
+        return analyticsReporting.getReport(
                 metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage"),
-                dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
-        ).toAdRepo()
-        return map[UUID]
+                dimensionNames = listOf("ga:pagePath", "ga:fullReferrer"),
+                key = UUID
+        ).toAdDto()
     }
 
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
@@ -48,7 +47,8 @@ class GoogleAnalyticsService {
 
     private fun AnalyticsReporting.getReport(
         metricExpressions: List<String>,
-        dimensionNames: List<String>
+        dimensionNames: List<String>,
+        key: String
     ): GetReportsResponse {
 
         val dateRange = DateRange().apply {
@@ -63,39 +63,22 @@ class GoogleAnalyticsService {
             .setDateRanges(listOf(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
-            .setFiltersExpression("ga:pagePath=~^/stillinger")
+            .setFiltersExpression("ga:pagePath=~^/stillinger/stilling/${key}")
 
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
 
     }
 
-    private fun GetReportsResponse.toAdRepo(): Map<String, AdDto> {
-        //sorry :(
-        val map = mutableMapOf<String, AdDto>()
-        reports.first().data.rows.forEach{row ->
-            map[row.dimensions.first().split("/").last()] =
-                map[row.dimensions.first().split("/").last()] merge rowToDto(row)
-        }
-        return map
-    }
-
-    private infix fun AdDto?.merge(other: AdDto): AdDto {
-        return this?.let {
+    private fun GetReportsResponse.toAdDto() : AdDto {
+        return reports.first().data.rows.let { row ->
             AdDto(
-                sidevisninger = this.sidevisninger + other.sidevisninger,
-                referrals = this.referrals + other.referrals,
-                viewsPerReferral = this.viewsPerReferral + other.viewsPerReferral
+                sidevisninger = row.mapNotNull { it.getMetric().first().toInt() }.sum(),
+                average = row.mapNotNull { it.getMetric().last().toDouble() }.average(),
+                referrals = row.mapNotNull { it.dimensions.last() },
+                viewsPerReferral = row.mapNotNull { it.getMetric().first().toInt() }
             )
-        } ?: other
+        }
     }
-
-    private fun rowToDto(row: ReportRow) =
-        AdDto(
-            sidevisninger = row.getMetric().first().toInt(),
-            referrals = listOf(row.dimensions.last()),
-            viewsPerReferral = listOf(row.getMetric().first().toInt())
-            )
-
 
 
     private fun ReportRow.getMetric() = metrics.first().getValues()
