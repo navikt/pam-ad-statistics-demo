@@ -13,14 +13,17 @@ import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.SpringVersion
 import org.springframework.stereotype.Service
-
+import javax.annotation.PostConstruct
 
 
 @Service
-class GoogleAnalyticsService {
+class GoogleAnalyticsService(
+    private val adStatisticsRepository: AdStatisticsRepository
+) {
 
     private var analyticsReporting = initializeAnalyticsReporting()
 
+    /*
     @Cacheable(value=["DTOByUUID"], key="#UUID")
     fun fetchAnalyticsByAdId(UUID: String): AdDto? {
         //skal flytte denne til repo component
@@ -30,6 +33,7 @@ class GoogleAnalyticsService {
         ).toAdRepo()
         return map[UUID]
     }
+     */
 
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
@@ -63,6 +67,7 @@ class GoogleAnalyticsService {
             .setDateRanges(listOf(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
+            .setPageSize(100000)
             .setFiltersExpression("ga:pagePath=~^/stillinger")
 
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
@@ -73,8 +78,8 @@ class GoogleAnalyticsService {
         //sorry :(
         val map = mutableMapOf<String, AdDto>()
         reports.first().data.rows.forEach{row ->
-            map[row.dimensions.first().split("/").last()] =
-                map[row.dimensions.first().split("/").last()] merge rowToDto(row)
+            val currentPath = row.dimensions.first().split("/").last()
+            map[currentPath] = map[currentPath] merge rowToDto(row)
         }
         return map
     }
@@ -97,8 +102,17 @@ class GoogleAnalyticsService {
             )
 
 
-
     private fun ReportRow.getMetric() = metrics.first().getValues()
+
+    @PostConstruct
+    private fun initializeRepo() {
+        val UUIDToDtoMap = analyticsReporting.getReport(
+            metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage"),
+            dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
+        ).toAdRepo()
+
+        adStatisticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
+    }
 
     companion object {
         private const val KEY_FILE_LOCATION = "/credentials.json"
