@@ -68,30 +68,32 @@ class GoogleAnalyticsService(
 
     }
 
-    private fun toAdRepo(
+    private fun ReportsResponseToStatisticsRepo(
         reportsResponse: GetReportsResponse
     ): Map<String, AdDto> {
         var currentReportsResponse = reportsResponse
+        //sorry :(
         val adDtoMap = mutableMapOf<String, AdDto>()
+        var isNextToken = true
 
-        //må være en ekstra loop før eller etter whilen men burde finnes en finere måte å gjøre det på
-        currentReportsResponse.getReport().data.rows.forEach { row ->
-            val currentPath = row.dimensions.first().split("/").last()
-            adDtoMap[currentPath] = adDtoMap[currentPath] merge rowToDto(row)
-        }
-
-        while (currentReportsResponse.getReport().nextPageToken != null) {
-            currentReportsResponse = analyticsReporting.getReportsResponse(
-                metricExpressions = METRIC_EXPRESSIONS,
-                dimensionNames = DIMENSION_NAMES,
-                pageToken = currentReportsResponse.getReport().nextPageToken
-            )
-
+        while (isNextToken) {
             currentReportsResponse.getReport().data.rows.forEach { row ->
                 val currentPath = row.dimensions.first().split("/").last()
                 adDtoMap[currentPath] = adDtoMap[currentPath] merge rowToDto(row)
             }
+
+            val nextToken = currentReportsResponse.getReport().nextPageToken
+            if (nextToken == null) {
+                isNextToken = false
+            } else {
+                currentReportsResponse = analyticsReporting.getReportsResponse(
+                    metricExpressions = METRIC_EXPRESSIONS,
+                    dimensionNames = DIMENSION_NAMES,
+                    pageToken = nextToken
+                )
+            }
         }
+
         return adDtoMap
     }
 
@@ -124,7 +126,7 @@ class GoogleAnalyticsService(
             dimensionNames = DIMENSION_NAMES
         )
 
-        val UUIDToDtoMap = toAdRepo(reportsResponse)
+        val UUIDToDtoMap = ReportsResponseToStatisticsRepo(reportsResponse)
 
         adStatisticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
