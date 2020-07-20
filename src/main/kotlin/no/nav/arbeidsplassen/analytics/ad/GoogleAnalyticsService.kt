@@ -10,8 +10,6 @@ import com.google.api.services.analyticsreporting.v4.model.*
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
-import org.springframework.cache.annotation.Cacheable
-import org.springframework.core.SpringVersion
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
@@ -23,17 +21,6 @@ class GoogleAnalyticsService(
 
     private var analyticsReporting = initializeAnalyticsReporting()
 
-    /*
-    @Cacheable(value=["DTOByUUID"], key="#UUID")
-    fun fetchAnalyticsByAdId(UUID: String): AdDto? {
-        //skal flytte denne til repo component
-        val map = analyticsReporting.getReport(
-                metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage"),
-                dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
-        ).toAdRepo()
-        return map[UUID]
-    }
-     */
 
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
@@ -50,9 +37,10 @@ class GoogleAnalyticsService(
     }
 
 
-    private fun AnalyticsReporting.getReport(
+    private fun AnalyticsReporting.getReportsResponse(
         metricExpressions: List<String>,
-        dimensionNames: List<String>
+        dimensionNames: List<String>,
+        pageToken: String? = null
     ): GetReportsResponse {
 
         val dateRange = DateRange().apply {
@@ -67,21 +55,44 @@ class GoogleAnalyticsService(
             .setDateRanges(listOf(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
-            .setPageSize(100000)
             .setFiltersExpression("ga:pagePath=~^/stillinger")
+                //burde være variabel
+            .setPageSize(10000)
+
+        if (pageToken != null) {
+            request.pageToken = pageToken
+        }
+
 
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
 
     }
 
-    private fun GetReportsResponse.toAdRepo(): Map<String, AdDto> {
-        //sorry :(
-        val map = mutableMapOf<String, AdDto>()
-        reports.first().data.rows.forEach{row ->
+    private fun toAdRepo(
+        reportsResponse: GetReportsResponse
+    ): Map<String, AdDto> {
+        var currentReportsResponse = reportsResponse
+        val adDtoMap = mutableMapOf<String, AdDto>()
+
+        //må være en ekstra loop før eller etter whilen men burde finnes en finere måte å gjøre det på
+        currentReportsResponse.getReport().data.rows.forEach { row ->
             val currentPath = row.dimensions.first().split("/").last()
-            map[currentPath] = map[currentPath] merge rowToDto(row)
+            adDtoMap[currentPath] = adDtoMap[currentPath] merge rowToDto(row)
         }
-        return map
+
+        while (currentReportsResponse.getReport().nextPageToken != null) {
+            currentReportsResponse = analyticsReporting.getReportsResponse(
+                metricExpressions = METRIC_EXPRESSIONS,
+                dimensionNames = DIMENSION_NAMES,
+                pageToken = currentReportsResponse.getReport().nextPageToken
+            )
+
+            currentReportsResponse.getReport().data.rows.forEach { row ->
+                val currentPath = row.dimensions.first().split("/").last()
+                adDtoMap[currentPath] = adDtoMap[currentPath] merge rowToDto(row)
+            }
+        }
+        return adDtoMap
     }
 
     private infix fun AdDto?.merge(other: AdDto): AdDto {
@@ -104,12 +115,16 @@ class GoogleAnalyticsService(
 
     private fun ReportRow.getMetric() = metrics.first().getValues()
 
+    private fun GetReportsResponse.getReport() = reports.first()
+
     @PostConstruct
     private fun initializeRepo() {
-        val UUIDToDtoMap = analyticsReporting.getReport(
-            metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage"),
-            dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
-        ).toAdRepo()
+        val reportsResponse = analyticsReporting.getReportsResponse(
+            metricExpressions = METRIC_EXPRESSIONS,
+            dimensionNames = DIMENSION_NAMES
+        )
+
+        val UUIDToDtoMap = toAdRepo(reportsResponse)
 
         adStatisticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
@@ -121,7 +136,8 @@ class GoogleAnalyticsService(
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
         //metrics and dimension
-
+        private val METRIC_EXPRESSIONS = listOf("ga:pageviews", "ga:avgTimeOnPage")
+        private val DIMENSION_NAMES = listOf("ga:pagePath", "ga:fullReferrer")
     }
 
 }
