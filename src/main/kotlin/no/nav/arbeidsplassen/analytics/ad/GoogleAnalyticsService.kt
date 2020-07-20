@@ -24,10 +24,7 @@ class GoogleAnalyticsService {
     @Cacheable(value=["DTOByUUID"], key="#UUID")
     fun fetchAnalyticsByAdId(UUID: String): AdDto? {
         return analyticsReporting.getReport(
-                metricExpressions = listOf(
-                    Pair("ga:pageviews", "Sidevisning"),
-                    Pair("ga:avgTimeOnPage", "Gj.tid")
-                ),
+                metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage"),
                 dimensionNames = listOf("ga:pagePath", "ga:fullReferrer"),
                 key = UUID
         ).toAdDto()
@@ -49,7 +46,7 @@ class GoogleAnalyticsService {
 
 
     private fun AnalyticsReporting.getReport(
-        metricExpressions: List<Pair<String, String>>,
+        metricExpressions: List<String>,
         dimensionNames: List<String>,
         key: String
     ): GetReportsResponse {
@@ -58,7 +55,7 @@ class GoogleAnalyticsService {
             startDate = "1DaysAgo"
             endDate = "today"
         }
-        val metrics: List<Metric> = metricExpressions.map { Metric().setExpression(it.first).setAlias(it.second) }
+        val metrics: List<Metric> = metricExpressions.map { Metric().setExpression(it) }
         val dimensions: List<Dimension> = dimensionNames.map { Dimension().setName(it) }
 
         val request = ReportRequest()
@@ -76,11 +73,13 @@ class GoogleAnalyticsService {
         return reports.first().data.rows.let { row ->
             AdDto(
                 sidevisninger = row.mapNotNull { it.getMetric().first().toInt() }.sum(),
-                average = row.mapNotNull { it.getMetric()[1].toDouble() }.average(),
-                referrals = row.mapNotNull { it.dimensions.last() to it.getMetric().first().toInt() }.toMap()
+                average = row.mapNotNull { it.getMetric().last().toDouble() }.average(),
+                referrals = row.mapNotNull { it.dimensions.last() },
+                viewsPerReferral = row.mapNotNull { it.getMetric().first().toInt() }
             )
         }
     }
+
 
     private fun ReportRow.getMetric() = metrics.first().getValues()
 
