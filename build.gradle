@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -27,10 +28,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework:spring-aspects'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.17.1'
-    
+
     implementation 'com.google.apis:google-api-services-analyticsreporting:v4-rev20200210-1.30.10'
     implementation 'com.google.http-client:google-http-client-gson:1.19.0'
-
 
 
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.6.0"

@@ -1,5 +1,6 @@
 {
-  "Stillinger": [{
+  "Stillinger": [
+    {
       "ID": "49823y89hds89489312",
       "tittel": "jobb",
       "sidevisninger": 3,
@@ -46,5 +47,6 @@
         "tablet": 3,
         "mobile": 10
       }
-    }]
+    }
+  ]
 }
