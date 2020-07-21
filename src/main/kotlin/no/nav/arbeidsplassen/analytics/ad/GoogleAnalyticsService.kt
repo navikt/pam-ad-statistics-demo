@@ -152,6 +152,8 @@ class GoogleAnalyticsService(
         )
 
         val UUIDToDtoMap = reportsResponseToStatisticsRepo(reportsResponse)
+
+        adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
 
     companion object {
