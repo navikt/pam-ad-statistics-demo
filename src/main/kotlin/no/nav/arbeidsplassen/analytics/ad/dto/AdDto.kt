@@ -1,14 +1,16 @@
 package no.nav.arbeidsplassen.analytics.ad.dto
 
+import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse
 import com.google.api.services.analyticsreporting.v4.model.ReportRow
 
 data class AdDto(
-    var sidevisninger: Int = 0,
+    var pageViews: Int = 0,
     //leaving the actual calculation to frontend
-    var average: List<Double> = listOf(),
+    var averageTimeOnPage: List<Double> = listOf(),
     var referrals: List<String> = listOf(),
     var viewsPerReferral: List<Int> = listOf(),
-    var viewsOverTime: Map<String, String>
+    var dates: List<String> = listOf(),
+    var viewsPerDate: List<Int> = listOf()
     /*
     var region: Map<String, String>,
     var device: Map<String, String>
@@ -17,25 +19,47 @@ data class AdDto(
 
 //kanskje ha annet sted
 abstract class DimensionEntity {
-    val dimensions: List<String>
-    val metrics: List<String>
+    var rows: List<ReportRow>
+    var nextPageToken: String?
 
-    constructor(row: ReportRow) {
-        dimensions = row.dimensions
-        metrics = row.getMetric()
+    constructor(reportsResponse: GetReportsResponse) {
+        rows = reportsResponse.reports.first().data.rows
+        nextPageToken = reportsResponse.reports.first().nextPageToken
     }
 
-    abstract fun toAdDto()
+    abstract fun toAdDto(row: ReportRow): AdDto
+
+    fun setGetReportsResponse(reportsResponse: GetReportsResponse) {
+        rows = reportsResponse.reports.first().data.rows
+        nextPageToken = reportsResponse.reports.first().nextPageToken
+    }
 }
 
 private fun ReportRow.getMetric() = metrics.first().getValues()
 
-class ReferralEntity(row: ReportRow): DimensionEntity(row) {
+class ReferralEntity(reportsResponse: GetReportsResponse): DimensionEntity(reportsResponse) {
 
     //ikke sikker på return eller dto-variabel
-    override fun toAdDto() {
-        val(
-
+    override fun toAdDto(row: ReportRow): AdDto {
+        return AdDto(
+            pageViews = row.getMetric().first().toInt(),
+            averageTimeOnPage = listOf(row.getMetric().last().toDouble()),
+            referrals = listOf(row.dimensions.last()),
+            viewsPerReferral = listOf(row.getMetric().first().toInt())
         )
     }
+
+}
+
+
+class DateEntity(reportsResponse: GetReportsResponse): DimensionEntity(reportsResponse) {
+
+    //ikke sikker på return eller dto-variabel
+    override fun toAdDto(row: ReportRow): AdDto {
+        return AdDto(
+            dates = listOf(row.dimensions.last()),
+            viewsPerDate = listOf(row.getMetric().first().toInt())
+        )
+    }
+
 }

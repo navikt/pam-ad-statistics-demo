@@ -16,6 +16,9 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
+import no.nav.arbeidsplassen.analytics.ad.dto.DateEntity
+import no.nav.arbeidsplassen.analytics.ad.dto.DimensionEntity
+import no.nav.arbeidsplassen.analytics.ad.dto.ReferralEntity
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -75,29 +78,30 @@ class GoogleAnalyticsService(
     }
 
     private fun reportsResponseToStatisticsRepo(
-        reportsResponse: GetReportsResponse
-    ): Map<String, AdDto> {
-        var currentReportsResponse = reportsResponse
-        //sorry :(
-        val adDtoMap = mutableMapOf<String, AdDto>()
+        dimensionEntity: DimensionEntity,
+        metricExpressions: List<String>,
+        dimensionNames: List<String>
+    ): MutableMap<String, AdDto> {
+        val adDtoMap = mutableMapOf<String,AdDto>()
         var isNextToken = true
 
         while (isNextToken) {
-            currentReportsResponse.getReport().data.rows.forEach { row ->
-                val currentPath = row.dimensions.first().split("/").last()
-                adDtoMap[currentPath] = adDtoMap[currentPath] mergeWith rowToDto(row)
+            dimensionEntity.rows.forEach { row ->
+                val adPath = row.dimensions.first()
+                adDtoMap[adPath] = adDtoMap[adPath] mergeWith dimensionEntity.toAdDto(row)
             }
 
-            val nextToken = currentReportsResponse.getReport().nextPageToken
+            val nextToken = dimensionEntity.nextPageToken
             if (nextToken == null) {
                 //kunne hatt return her
                 isNextToken = false
             } else {
-                currentReportsResponse = analyticsReporting.getReportsResponse(
-                    metricExpressions = METRIC_EXPRESSIONS,
-                    dimensionNames = DIMENSION_NAMES,
+                val newReportsResponse = analyticsReporting.getReportsResponse(
+                    metricExpressions = metricExpressions,
+                    dimensionNames = dimensionNames,
                     pageToken = nextToken
                 )
+                dimensionEntity.setGetReportsResponse(newReportsResponse)
             }
         }
 
@@ -107,21 +111,16 @@ class GoogleAnalyticsService(
     private infix fun AdDto?.mergeWith(other: AdDto): AdDto {
         return this?.let {
             AdDto(
-                sidevisninger = it.sidevisninger + other.sidevisninger,
-                average = it.average + other.average,
+                pageViews = it.pageViews + other.pageViews,
+                averageTimeOnPage = it.averageTimeOnPage + other.averageTimeOnPage,
                 referrals = it.referrals + other.referrals,
-                viewsPerReferral = it.viewsPerReferral + other.viewsPerReferral
+                viewsPerReferral = it.viewsPerReferral + other.viewsPerReferral,
+                dates = it.dates + other.dates,
+                viewsPerDate = it.viewsPerDate + other.viewsPerDate
             )
         } ?: other
     }
 
-    private fun rowToDto(row: ReportRow) =
-        AdDto(
-            sidevisninger = row.getMetric().first().toInt(),
-            average = listOf(row.getMetric().last().toDouble()),
-            referrals = listOf(row.dimensions.last()),
-            viewsPerReferral = listOf(row.getMetric().first().toInt())
-        )
 
     private fun ReportRow.getMetric() = metrics.first().getValues()
 
@@ -131,13 +130,26 @@ class GoogleAnalyticsService(
     @PostConstruct
     private fun initializeRepo() {
         val reportsResponse = analyticsReporting.getReportsResponse(
-            metricExpressions = METRIC_EXPRESSIONS,
-            dimensionNames = DIMENSION_NAMES
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
         )
 
-        val UUIDToDtoMap = reportsResponseToStatisticsRepo(reportsResponse)
+        val halfwayMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = ReferralEntity(reportsResponse),
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
+        )
+        /*
+        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = DateEntity(reportsResponse),
+            testMap = halfwayMap,
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
 
-        adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
+         */
+
+        adAnalyticsRepository.updateUUIDToDtoMap(halfwayMap)
     }
 
     @ConditionalOnProperty(
@@ -147,11 +159,21 @@ class GoogleAnalyticsService(
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Oslo")
     private fun scheduledRepoUpdate() {
         val reportsResponse = analyticsReporting.getReportsResponse(
-            metricExpressions = METRIC_EXPRESSIONS,
-            dimensionNames = DIMENSION_NAMES
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
         )
 
-        val UUIDToDtoMap = reportsResponseToStatisticsRepo(reportsResponse)
+        val halfwayMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = ReferralEntity(reportsResponse),
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
+        )
+
+        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = DateEntity(reportsResponse),
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
 
         adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
@@ -163,7 +185,10 @@ class GoogleAnalyticsService(
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
         //metrics and dimension
-        private val METRIC_EXPRESSIONS = listOf("ga:pageviews", "ga:avgTimeOnPage")
-        private val DIMENSION_NAMES = listOf("ga:pagePath", "ga:fullReferrer")
+        private val METRIC_EXPRESSIONS1 = listOf("ga:pageviews", "ga:avgTimeOnPage")
+        private val DIMENSION_NAMES1 = listOf("ga:pagePath", "ga:fullReferrer")
+
+        private val METRIC_EXPRESSIONS2 = listOf("ga:pageviews")
+        private val DIMENSION_NAMES2 = listOf("ga:pagePath", "ga:date")
     }
 }
