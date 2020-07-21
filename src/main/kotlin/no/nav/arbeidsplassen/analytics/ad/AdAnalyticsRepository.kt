@@ -4,7 +4,7 @@ import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import org.springframework.stereotype.Repository
 
 @Repository
-class AdStatisticsRepository {
+class AdAnalyticsRepository {
     private var UUIDToDtoMap = emptyMap<String, AdDto>()
 
     fun updateUUIDToDtoMap(UUIDToDtoMap: Map<String, AdDto>) {

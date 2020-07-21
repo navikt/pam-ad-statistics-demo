@@ -10,13 +10,15 @@ import com.google.api.services.analyticsreporting.v4.model.*
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 
 @Service
 class GoogleAnalyticsService(
-    private val adStatisticsRepository: AdStatisticsRepository
+    private val adAnalyticsRepository: AdAnalyticsRepository
 ) {
 
     private var analyticsReporting = initializeAnalyticsReporting()
@@ -59,8 +61,8 @@ class GoogleAnalyticsService(
                 //burde være variabel
             .setPageSize(10000)
 
-        if (pageToken != null) {
-            request.pageToken = pageToken
+        pageToken?.let {
+            request.pageToken = it
         }
 
 
@@ -79,11 +81,12 @@ class GoogleAnalyticsService(
         while (isNextToken) {
             currentReportsResponse.getReport().data.rows.forEach { row ->
                 val currentPath = row.dimensions.first().split("/").last()
-                adDtoMap[currentPath] = adDtoMap[currentPath] merge rowToDto(row)
+                adDtoMap[currentPath] = adDtoMap[currentPath] mergeWith rowToDto(row)
             }
 
             val nextToken = currentReportsResponse.getReport().nextPageToken
             if (nextToken == null) {
+                //kunne hatt return her
                 isNextToken = false
             } else {
                 currentReportsResponse = analyticsReporting.getReportsResponse(
@@ -97,12 +100,13 @@ class GoogleAnalyticsService(
         return adDtoMap
     }
 
-    private infix fun AdDto?.merge(other: AdDto): AdDto {
+    private infix fun AdDto?.mergeWith(other: AdDto): AdDto {
         return this?.let {
             AdDto(
-                sidevisninger = this.sidevisninger + other.sidevisninger,
-                referrals = this.referrals + other.referrals,
-                viewsPerReferral = this.viewsPerReferral + other.viewsPerReferral
+                sidevisninger = it.sidevisninger + other.sidevisninger,
+                average = it.average + other.average,
+                referrals = it.referrals + other.referrals,
+                viewsPerReferral = it.viewsPerReferral + other.viewsPerReferral
             )
         } ?: other
     }
@@ -110,13 +114,15 @@ class GoogleAnalyticsService(
     private fun rowToDto(row: ReportRow) =
         AdDto(
             sidevisninger = row.getMetric().first().toInt(),
+            average = listOf(row.getMetric().last().toDouble()),
             referrals = listOf(row.dimensions.last()),
             viewsPerReferral = listOf(row.getMetric().first().toInt())
-            )
+        )
 
 
     private fun ReportRow.getMetric() = metrics.first().getValues()
 
+    //implying we only send one request
     private fun GetReportsResponse.getReport() = reports.first()
 
     @PostConstruct
@@ -128,8 +134,23 @@ class GoogleAnalyticsService(
 
         val UUIDToDtoMap = ReportsResponseToStatisticsRepo(reportsResponse)
 
-        adStatisticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
+        adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
+
+    @ConditionalOnProperty(
+        value = ["scheduler.enable"], havingValue = "true", matchIfMissing = true
+    )
+    //kanskje fixeddelay/fixedrate istedet for cron
+    @Scheduled(cron = "0 0 * * * *", zone = "Europe/Oslo")
+    private fun scheduledRepoUpdate() {
+        val reportsResponse = analyticsReporting.getReportsResponse(
+            metricExpressions = METRIC_EXPRESSIONS,
+            dimensionNames = DIMENSION_NAMES
+        )
+
+        val UUIDToDtoMap = ReportsResponseToStatisticsRepo(reportsResponse)
+    }
+
 
     companion object {
         private const val KEY_FILE_LOCATION = "/credentials.json"

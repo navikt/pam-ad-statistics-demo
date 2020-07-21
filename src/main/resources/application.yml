@@ -14,9 +14,6 @@ management:
 spring:
   metrics.web.server.auto-time-requests: true
   task.scheduling.pool.size: 5
-  cache:
-    jcache:
-      config: ehcache.xml
   main:
     banner-mode: "off"
     allow-bean-definition-overriding: true
@@ -30,3 +27,6 @@ server:
     include-stacktrace: never
   servlet:
     context-path: /
+
+scheduler:
+  enable: true

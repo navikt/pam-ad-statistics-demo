@@ -6,14 +6,14 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("ad")
 class AdAnalyticsController(
-    private val adStatisticsRepository: AdStatisticsRepository
+    private val adAnalyticsRepository: AdAnalyticsRepository
 ) {
 
     @GetMapping(value = ["{UUID}"])
     fun getAdAnalyticsData(
         @PathVariable("UUID") UUID: String
     ): AdDto? {
-        return adStatisticsRepository.getDtoFromUUID(UUID)
+        return adAnalyticsRepository.getDtoFromUUID(UUID)
     }
 
     /*
