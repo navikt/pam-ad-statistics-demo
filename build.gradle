@@ -7,7 +7,7 @@ plugins {
     id 'application'
 }
 
-group 'no.nav.arbeidsplassen.placeholder'
+group 'no.nav.arbeidsplassen.analytics'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
