@@ -79,15 +79,14 @@ class GoogleAnalyticsService(
 
     private fun reportsResponseToStatisticsRepo(
         dimensionEntity: DimensionEntity,
+        adDtoMap: MutableMap<String, AdDto> = mutableMapOf<String,AdDto>(),
         metricExpressions: List<String>,
         dimensionNames: List<String>
     ): MutableMap<String, AdDto> {
-        val adDtoMap = mutableMapOf<String,AdDto>()
         var isNextToken = true
-
         while (isNextToken) {
             dimensionEntity.rows.forEach { row ->
-                val adPath = row.dimensions.first()
+                val adPath = row.dimensions.first().split("/").last()
                 adDtoMap[adPath] = adDtoMap[adPath] mergeWith dimensionEntity.toAdDto(row)
             }
 
@@ -104,7 +103,6 @@ class GoogleAnalyticsService(
                 dimensionEntity.setGetReportsResponse(newReportsResponse)
             }
         }
-
         return adDtoMap
     }
 
@@ -129,27 +127,30 @@ class GoogleAnalyticsService(
 
     @PostConstruct
     private fun initializeRepo() {
-        val reportsResponse = analyticsReporting.getReportsResponse(
+        val referralReportsResponse = analyticsReporting.getReportsResponse(
             metricExpressions = METRIC_EXPRESSIONS1,
             dimensionNames = DIMENSION_NAMES1
         )
 
-        val halfwayMap = reportsResponseToStatisticsRepo(
-            dimensionEntity = ReferralEntity(reportsResponse),
-            metricExpressions = METRIC_EXPRESSIONS1,
-            dimensionNames = DIMENSION_NAMES1
-        )
-        /*
-        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
-            dimensionEntity = DateEntity(reportsResponse),
-            testMap = halfwayMap,
+        val dateReportsResponse = analyticsReporting.getReportsResponse(
             metricExpressions = METRIC_EXPRESSIONS2,
             dimensionNames = DIMENSION_NAMES2
         )
 
-         */
+        val halfwayMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = ReferralEntity(referralReportsResponse),
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
+        )
 
-        adAnalyticsRepository.updateUUIDToDtoMap(halfwayMap)
+        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = DateEntity(dateReportsResponse),
+            adDtoMap = halfwayMap,
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
+
+        adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
 
     @ConditionalOnProperty(
@@ -158,23 +159,28 @@ class GoogleAnalyticsService(
     //kanskje fixeddelay/fixedrate istedet for cron
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Oslo")
     private fun scheduledRepoUpdate() {
-        val reportsResponse = analyticsReporting.getReportsResponse(
+        val referralReportsResponse = analyticsReporting.getReportsResponse(
             metricExpressions = METRIC_EXPRESSIONS1,
             dimensionNames = DIMENSION_NAMES1
         )
 
+        val dateReportsResponse = analyticsReporting.getReportsResponse(
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
+
         val halfwayMap = reportsResponseToStatisticsRepo(
-            dimensionEntity = ReferralEntity(reportsResponse),
+            dimensionEntity = ReferralEntity(referralReportsResponse),
             metricExpressions = METRIC_EXPRESSIONS1,
             dimensionNames = DIMENSION_NAMES1
         )
 
         val UUIDToDtoMap = reportsResponseToStatisticsRepo(
-            dimensionEntity = DateEntity(reportsResponse),
+            dimensionEntity = DateEntity(dateReportsResponse),
+            adDtoMap = halfwayMap,
             metricExpressions = METRIC_EXPRESSIONS2,
             dimensionNames = DIMENSION_NAMES2
         )
-
         adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
 
