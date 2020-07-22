@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.io.ByteArrayInputStream
 import javax.annotation.PostConstruct
 
 @Service
@@ -181,7 +182,8 @@ class GoogleAnalyticsService(
 
     companion object {
         @Value("\${GOOGLE_API_CREDENTIALS}")
-        private const val KEY_FILE_LOCATION = ""
+        private const val KEY_FILE_LOCATION_STRING = ""
+        private val KEY_FILE_LOCATION = ByteArrayInputStream(KEY_FILE_LOCATION_STRING.toByteArray(Charsets.UTF_8))
         private const val VIEW_ID = "177785619"
         private const val APPLICATION_NAME = "Analytics Reporting Demo"
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
