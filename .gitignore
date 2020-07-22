@@ -2,3 +2,8 @@
 .gradle
 build
 **/credentials.json
+target
+.DS_Store
+
+*.iml
+out

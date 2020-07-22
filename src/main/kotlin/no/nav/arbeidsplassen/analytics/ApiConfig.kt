@@ -9,7 +9,6 @@ class ApiConfig : WebMvcConfigurer {
 
     private var origins = arrayOf("http://localhost:3000")
 
-
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
             .allowedOrigins(*origins)

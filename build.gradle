@@ -7,7 +7,7 @@ plugins {
     id 'application'
 }
 
-group 'no.nav.arbeidsplassen.placeholder'
+group 'no.nav.arbeidsplassen.analytics'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -25,15 +26,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-logging'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'org.springframework:spring-aspects'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.17.1'
-    implementation 'net.sf.ehcache:ehcache:2.10.6'
-    implementation group: 'javax.cache', name: 'cache-api', version: '1.0.0'
-    
+
     implementation 'com.google.apis:google-api-services-analyticsreporting:v4-rev20200210-1.30.10'
     implementation 'com.google.http-client:google-http-client-gson:1.19.0'
-
 
 
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.6.0"
