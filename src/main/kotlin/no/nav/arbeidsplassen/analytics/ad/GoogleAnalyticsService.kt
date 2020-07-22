@@ -37,7 +37,7 @@ class GoogleAnalyticsService(
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val credential = GoogleCredentials
-            .fromStream(GoogleAnalyticsService::class.java.getResourceAsStream(KEY_FILE_LOCATION))
+            .fromStream(KEY_FILE)
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
         val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
@@ -182,8 +182,8 @@ class GoogleAnalyticsService(
 
     companion object {
         @Value("\${GOOGLE_API_CREDENTIALS}")
-        private const val KEY_FILE_LOCATION_STRING = ""
-        private val KEY_FILE_LOCATION = ByteArrayInputStream(KEY_FILE_LOCATION_STRING.toByteArray(Charsets.UTF_8))
+        private const val KEY_FILE_STRING = ""
+        private val KEY_FILE = ByteArrayInputStream(KEY_FILE_STRING.toByteArray(Charsets.UTF_8))
         private const val VIEW_ID = "177785619"
         private const val APPLICATION_NAME = "Analytics Reporting Demo"
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
