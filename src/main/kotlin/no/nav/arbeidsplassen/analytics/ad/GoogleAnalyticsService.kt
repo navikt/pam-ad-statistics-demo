@@ -79,7 +79,7 @@ class GoogleAnalyticsService(
 
     private fun reportsResponseToStatisticsRepo(
         dimensionEntity: DimensionEntity,
-        adDtoMap: MutableMap<String, AdDto> = mutableMapOf<String,AdDto>(),
+        adDtoMap: MutableMap<String, AdDto> = mutableMapOf<String, AdDto>(),
         metricExpressions: List<String>,
         dimensionNames: List<String>
     ): MutableMap<String, AdDto> {
@@ -118,12 +118,6 @@ class GoogleAnalyticsService(
             )
         } ?: other
     }
-
-
-    private fun ReportRow.getMetric() = metrics.first().getValues()
-
-    //this is implying we only send one request
-    private fun GetReportsResponse.getReport() = reports.first()
 
     @PostConstruct
     private fun initializeRepo() {

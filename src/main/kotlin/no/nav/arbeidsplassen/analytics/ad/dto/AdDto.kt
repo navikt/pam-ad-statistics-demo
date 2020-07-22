@@ -23,21 +23,19 @@ abstract class DimensionEntity {
     var nextPageToken: String?
 
     constructor(reportsResponse: GetReportsResponse) {
-        rows = reportsResponse.reports.first().data.rows
-        nextPageToken = reportsResponse.reports.first().nextPageToken
+        rows = reportsResponse.getReport().data.rows
+        nextPageToken = reportsResponse.getReport().nextPageToken
     }
 
     abstract fun toAdDto(row: ReportRow): AdDto
 
     fun setGetReportsResponse(reportsResponse: GetReportsResponse) {
-        rows = reportsResponse.reports.first().data.rows
-        nextPageToken = reportsResponse.reports.first().nextPageToken
+        rows = reportsResponse.getReport().data.rows
+        nextPageToken = reportsResponse.getReport().nextPageToken
     }
 }
 
-private fun ReportRow.getMetric() = metrics.first().getValues()
-
-class ReferralEntity(reportsResponse: GetReportsResponse): DimensionEntity(reportsResponse) {
+class ReferralEntity(reportsResponse: GetReportsResponse) : DimensionEntity(reportsResponse) {
 
     //ikke sikker på return eller dto-variabel
     override fun toAdDto(row: ReportRow): AdDto {
@@ -48,11 +46,9 @@ class ReferralEntity(reportsResponse: GetReportsResponse): DimensionEntity(repor
             viewsPerReferral = listOf(row.getMetric().first().toInt())
         )
     }
-
 }
 
-
-class DateEntity(reportsResponse: GetReportsResponse): DimensionEntity(reportsResponse) {
+class DateEntity(reportsResponse: GetReportsResponse) : DimensionEntity(reportsResponse) {
 
     //ikke sikker på return eller dto-variabel
     override fun toAdDto(row: ReportRow): AdDto {
@@ -61,5 +57,9 @@ class DateEntity(reportsResponse: GetReportsResponse): DimensionEntity(reportsRe
             viewsPerDate = listOf(row.getMetric().first().toInt())
         )
     }
-
 }
+
+//this is implying we only send one request
+private fun GetReportsResponse.getReport() = reports.first()
+
+private fun ReportRow.getMetric() = metrics.first().getValues()
