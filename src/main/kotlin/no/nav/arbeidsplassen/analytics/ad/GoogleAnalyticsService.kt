@@ -19,6 +19,7 @@ import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import no.nav.arbeidsplassen.analytics.ad.dto.DateEntity
 import no.nav.arbeidsplassen.analytics.ad.dto.DimensionEntity
 import no.nav.arbeidsplassen.analytics.ad.dto.ReferralEntity
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -179,7 +180,8 @@ class GoogleAnalyticsService(
     }
 
     companion object {
-        private const val KEY_FILE_LOCATION = "/credentials.json"
+        @Value("\${GOOGLE_API_CREDENTIALS}")
+        private const val KEY_FILE_LOCATION = ""
         private const val VIEW_ID = "177785619"
         private const val APPLICATION_NAME = "Analytics Reporting Demo"
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
