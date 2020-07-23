@@ -12,7 +12,7 @@ class GoogleAnalyticsService(
 ) {
 
     private fun reportsResponseToStatisticsRepo(
-        dimensionEntities: List<DimensionEntity>
+        vararg dimensionEntities: DimensionEntity
     ): MutableMap<String, AdDto> {
         val adDtoMap = mutableMapOf<String, AdDto>()
         //kanskje litt mange foreaches
@@ -42,7 +42,10 @@ class GoogleAnalyticsService(
 
     @PostConstruct
     private fun initializeRepo() {
-        val UUIDToDtoMap = reportsResponseToStatisticsRepo(listOf(ReferralEntity(), DateEntity()))
+        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
+            ReferralEntity(startTrackingDate = "1DaysAgo", endTrackingDate = "today"),
+            DateEntity(startTrackingDate = "1DaysAgo", endTrackingDate = "today")
+        )
 
         adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
@@ -53,7 +56,10 @@ class GoogleAnalyticsService(
     //kanskje fixeddelay/fixedrate istedet for cron
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Oslo")
     private fun scheduledRepoUpdate() {
-        val UUIDToDtoMap = reportsResponseToStatisticsRepo(listOf(ReferralEntity(), DateEntity()))
+        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
+            ReferralEntity(startTrackingDate = "1DaysAgo", endTrackingDate = "today"),
+            DateEntity(startTrackingDate = "1DaysAgo", endTrackingDate = "today")
+        )
 
         adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }

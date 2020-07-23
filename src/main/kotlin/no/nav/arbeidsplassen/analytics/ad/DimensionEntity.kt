@@ -17,19 +17,28 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 
-abstract class DimensionEntity {
+abstract class DimensionEntity(startTrackingDate: String, endTrackingDate: String) {
     private var analyticsReporting = initializeAnalyticsReporting()
     var rows = listOf<ReportRow>()
     private var nextPageToken: String? = ""
     abstract val metricExpressions: List<String>
     abstract val dimensionNames: List<String>
+    private val startDate = startTrackingDate
+    private val endDate = endTrackingDate
 
     abstract fun toAdDto(row: ReportRow): AdDto
 
     fun nextPage(): Boolean {
         return nextPageToken?.let {
             val reportsResponse =
-                analyticsReporting.getReportsResponse(metricExpressions, dimensionNames, nextPageToken)
+                analyticsReporting.getReportsResponse(
+                    metricExpressions,
+                    dimensionNames,
+                    nextPageToken,
+                    startDate,
+                    endDate
+                )
+
             rows = reportsResponse.getReport().data.rows
             nextPageToken = reportsResponse.getReport().nextPageToken
             true
@@ -39,12 +48,14 @@ abstract class DimensionEntity {
     private fun AnalyticsReporting.getReportsResponse(
         metricExpressions: List<String>,
         dimensionNames: List<String>,
-        pageToken: String? = null
+        pageToken: String? = null,
+        startDate: String,
+        endDate: String
     ): GetReportsResponse {
 
         val dateRange = DateRange().apply {
-            startDate = "1DaysAgo"
-            endDate = "today"
+            this.startDate = startDate
+            this.endDate = endDate
         }
         val metrics: List<Metric> = metricExpressions.map { Metric().setExpression(it) }
         val dimensions: List<Dimension> = dimensionNames.map { Dimension().setName(it) }
@@ -91,7 +102,10 @@ abstract class DimensionEntity {
     }
 }
 
-class ReferralEntity : DimensionEntity() {
+class ReferralEntity(
+    startTrackingDate: String,
+    endTrackingDate: String
+) : DimensionEntity(startTrackingDate, endTrackingDate) {
     override val metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage")
     override val dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
 
@@ -105,7 +119,10 @@ class ReferralEntity : DimensionEntity() {
     }
 }
 
-class DateEntity : DimensionEntity() {
+class DateEntity(
+    startTrackingDate: String,
+    endTrackingDate: String
+) : DimensionEntity(startTrackingDate, endTrackingDate) {
     override val metricExpressions = listOf("ga:pageviews")
     override val dimensionNames = listOf("ga:pagePath", "ga:date")
 
