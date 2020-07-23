@@ -1,18 +1,12 @@
 package no.nav.arbeidsplassen.analytics.ad
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
-import com.google.api.services.analyticsreporting.v4.model.DateRange
-import com.google.api.services.analyticsreporting.v4.model.Dimension
-import com.google.api.services.analyticsreporting.v4.model.GetReportsRequest
-import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse
-import com.google.api.services.analyticsreporting.v4.model.Metric
-import com.google.api.services.analyticsreporting.v4.model.ReportRequest
+import com.google.api.services.analyticsreporting.v4.model.*
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
@@ -35,6 +29,7 @@ class GoogleAnalyticsService(
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
         val httpTransport: HttpTransport = NetHttpTransport()
 
+        // TODO - environment specific file path in application.yml
         val credential = GoogleCredentials
             .fromStream(File("/secret/credential/googleCredentials.json").inputStream())
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
