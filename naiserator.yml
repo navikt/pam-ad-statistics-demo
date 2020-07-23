@@ -28,8 +28,8 @@ spec:
   vault:
     enabled: true
     paths:
-      -kvPath: /kv/preprod/sbs/pam-ad-statistics-demo/default
-       mountPath: /secret/credential
+      - kvPath: /kv/preprod/sbs/pam-ad-statistics-demo/default
+        mountPath: /secret/credential
   webproxy: true
   prometheus:
     enabled: true
