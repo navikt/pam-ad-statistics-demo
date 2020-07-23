@@ -17,26 +17,31 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 
-abstract class DimensionEntity(startTrackingDate: String, endTrackingDate: String) {
+abstract class DimensionEntity() {
     private var analyticsReporting = initializeAnalyticsReporting()
     var rows = listOf<ReportRow>()
     private var nextPageToken: String? = ""
     abstract val metricExpressions: List<String>
     abstract val dimensionNames: List<String>
-    private val startDate = startTrackingDate
-    private val endDate = endTrackingDate
+    private var startDate = "1DaysAgo"
+    private var endDate = "today"
 
     abstract fun toAdDto(row: ReportRow): AdDto
+
+    fun setDateRange(startDate: String, endDate: String) {
+        this.startDate = startDate
+        this.endDate = endDate
+    }
 
     fun nextPage(): Boolean {
         return nextPageToken?.let {
             val reportsResponse =
                 analyticsReporting.getReportsResponse(
-                    metricExpressions,
-                    dimensionNames,
-                    nextPageToken,
-                    startDate,
-                    endDate
+                    metricExpressions = metricExpressions,
+                    dimensionNames = dimensionNames,
+                    pageToken = nextPageToken,
+                    startDate = startDate,
+                    endDate = endDate
                 )
 
             rows = reportsResponse.getReport().data.rows
@@ -102,10 +107,7 @@ abstract class DimensionEntity(startTrackingDate: String, endTrackingDate: Strin
     }
 }
 
-class ReferralEntity(
-    startTrackingDate: String,
-    endTrackingDate: String
-) : DimensionEntity(startTrackingDate, endTrackingDate) {
+class ReferralEntity : DimensionEntity() {
     override val metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage")
     override val dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
 
@@ -119,10 +121,7 @@ class ReferralEntity(
     }
 }
 
-class DateEntity(
-    startTrackingDate: String,
-    endTrackingDate: String
-) : DimensionEntity(startTrackingDate, endTrackingDate) {
+class DateEntity : DimensionEntity() {
     override val metricExpressions = listOf("ga:pageviews")
     override val dimensionNames = listOf("ga:pagePath", "ga:date")
 
