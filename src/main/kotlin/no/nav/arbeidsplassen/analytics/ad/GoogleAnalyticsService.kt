@@ -1,12 +1,9 @@
 package no.nav.arbeidsplassen.analytics.ad
 
-import com.google.api.client.googleapis.GoogleUtils
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
-import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import com.google.api.client.util.SecurityUtils
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
 import com.google.api.services.analyticsreporting.v4.model.DateRange
@@ -35,9 +32,7 @@ class GoogleAnalyticsService(
     private var analyticsReporting = initializeAnalyticsReporting()
 
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
-        val httpTransport: HttpTransport = NetHttpTransport.Builder()
-            .trustCertificates(SecurityUtils.getJavaKeyStore())
-            .build()
+        val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val credential = GoogleCredentials
             .fromStream(File("/secret/credential/googleCredentials.json").inputStream())
