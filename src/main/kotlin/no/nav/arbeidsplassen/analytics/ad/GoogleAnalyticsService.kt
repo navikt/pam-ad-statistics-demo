@@ -34,7 +34,7 @@ class GoogleAnalyticsService(
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
         val credential = GoogleCredentials
-            .fromStream(File("/secret/credential/googleCredentials.json").readText().byteInputStream())
+            .fromStream(File("/secret/credential/googleCredentials.json").inputStream())
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
         val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
