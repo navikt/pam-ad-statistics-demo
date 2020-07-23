@@ -20,8 +20,6 @@ spring:
   profiles:
     active: ${NAIS_CLUSTER_NAME:dev}
 
-GOOGLE_API_CREDENTIALS: ${GOOGLE_API_CREDENTIALS}
-
 server:
   error:
     whitelabel:
