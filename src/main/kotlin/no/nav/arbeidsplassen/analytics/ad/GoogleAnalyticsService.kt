@@ -22,13 +22,12 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.io.File
 import javax.annotation.PostConstruct
 
 @Service
 class GoogleAnalyticsService(
     private val adAnalyticsRepository: AdAnalyticsRepository,
-    @Value("\${GOOGLE_API_CREDENTIALS}")
-    private val googleApiCredentials: String
 ) {
 
     private var analyticsReporting = initializeAnalyticsReporting()
@@ -37,10 +36,7 @@ class GoogleAnalyticsService(
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val credential = GoogleCredentials
-            .fromStream(googleApiCredentials
-                .replace("\\n", "")
-                .replace("\\\\n", "\\n")
-                .byteInputStream())
+            .fromStream(File("/secret/credential/googleCredentials.json").inputStream())
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
         val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
