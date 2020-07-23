@@ -12,7 +12,6 @@ import com.google.api.services.analyticsreporting.v4.model.GetReportsRequest
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse
 import com.google.api.services.analyticsreporting.v4.model.Metric
 import com.google.api.services.analyticsreporting.v4.model.ReportRequest
-import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
@@ -23,12 +22,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import java.io.ByteArrayInputStream
 import javax.annotation.PostConstruct
 
 @Service
 class GoogleAnalyticsService(
-    private val adAnalyticsRepository: AdAnalyticsRepository
+    private val adAnalyticsRepository: AdAnalyticsRepository,
+    @Value("\${GOOGLE_API_CREDENTIALS}")
+    private val googleApiCredentials: String
 ) {
 
     private var analyticsReporting = initializeAnalyticsReporting()
@@ -37,7 +37,7 @@ class GoogleAnalyticsService(
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val credential = GoogleCredentials
-            .fromStream(KEY_FILE)
+            .fromStream(googleApiCredentials.byteInputStream())
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
         val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
@@ -181,9 +181,6 @@ class GoogleAnalyticsService(
     }
 
     companion object {
-        @Value("\${GOOGLE_API_CREDENTIALS}")
-        private const val KEY_FILE_STRING = ""
-        private val KEY_FILE = ByteArrayInputStream(KEY_FILE_STRING.toByteArray(Charsets.UTF_8))
         private const val VIEW_ID = "177785619"
         private const val APPLICATION_NAME = "Analytics Reporting Demo"
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
