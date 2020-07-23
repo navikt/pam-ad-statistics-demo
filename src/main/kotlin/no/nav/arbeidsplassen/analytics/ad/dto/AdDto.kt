@@ -6,7 +6,7 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow
 data class AdDto(
     var pageViews: Int = 0,
     //leaving the actual calculation to frontend
-    var averageTimeOnPage: List<Int> = listOf(),
+    var averageTimeOnPage: List<Double> = listOf(),
     var referrals: List<String> = listOf(),
     var viewsPerReferral: List<Int> = listOf(),
     var dates: List<String> = listOf(),
@@ -41,7 +41,7 @@ class ReferralEntity(reportsResponse: GetReportsResponse) : DimensionEntity(repo
     override fun toAdDto(row: ReportRow): AdDto {
         return AdDto(
             pageViews = row.getMetric().first().toInt(),
-            averageTimeOnPage = listOf(row.getMetric().last().toDouble().toInt()),
+            averageTimeOnPage = listOf(row.getMetric().last().toDouble()),
             referrals = listOf(row.dimensions.last()),
             viewsPerReferral = listOf(row.getMetric().first().toInt())
         )
