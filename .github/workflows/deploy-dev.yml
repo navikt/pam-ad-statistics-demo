@@ -8,8 +8,7 @@ on:
       - "CODEOWNERS"
     branches:
       - master
-      - RepoBasedSolution
-      - feature/PAM-4329-deployment
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
