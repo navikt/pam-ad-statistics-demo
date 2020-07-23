@@ -9,7 +9,7 @@ on:
     branches:
       - master
       - RepoBasedSolution
-      - refactoring/PAM-4324
+      - feature/PAM-4329-deployment
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
