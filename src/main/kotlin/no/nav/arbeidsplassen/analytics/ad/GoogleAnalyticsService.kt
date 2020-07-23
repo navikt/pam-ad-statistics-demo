@@ -29,24 +29,21 @@ class GoogleAnalyticsService(
     private val adAnalyticsRepository: AdAnalyticsRepository
 ) {
 
-    private fun initializeAnalyticsReporting(): AnalyticsReporting? {
-        try {
-            val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
-            val credential = GoogleCredentials
-                .fromStream(File("/secret/credential/googleCredentials.json").inputStream())
-                .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
+    private var analyticsReporting = initializeAnalyticsReporting()
 
-            val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
-            return AnalyticsReporting.Builder(
-                httpTransport,
-                JSON_FACTORY, requestInitializer
-            )
-                .setApplicationName(APPLICATION_NAME).build()
-        } catch (e: Exception) {
-            // TODO - Add logger
-            println("Failed to initialize AnalyticsReporting: $e")
-            return null
-        }
+    private fun initializeAnalyticsReporting(): AnalyticsReporting {
+        val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
+        val credential = GoogleCredentials
+            .fromStream(File("/secret/credential/googleCredentials.json").inputStream())
+            .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
+
+        val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
+
+        return AnalyticsReporting.Builder(
+            httpTransport,
+            JSON_FACTORY, requestInitializer
+        )
+            .setApplicationName(APPLICATION_NAME).build()
     }
 
     private fun AnalyticsReporting.getReportsResponse(
@@ -97,11 +94,11 @@ class GoogleAnalyticsService(
                 //kunne hatt return her
                 isNextToken = false
             } else {
-                val newReportsResponse = initializeAnalyticsReporting()?.getReportsResponse(
+                val newReportsResponse = analyticsReporting.getReportsResponse(
                     metricExpressions = metricExpressions,
                     dimensionNames = dimensionNames,
                     pageToken = nextToken
-                ) ?: GetReportsResponse()
+                )
                 dimensionEntity.setGetReportsResponse(newReportsResponse)
             }
         }
@@ -123,33 +120,30 @@ class GoogleAnalyticsService(
 
     @PostConstruct
     private fun initializeRepo() {
-        val analyticsReporting = initializeAnalyticsReporting()
-        if (analyticsReporting != null) {
-            val referralReportsResponse = analyticsReporting.getReportsResponse(
-                metricExpressions = METRIC_EXPRESSIONS1,
-                dimensionNames = DIMENSION_NAMES1
-            )
+        val referralReportsResponse = analyticsReporting.getReportsResponse(
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
+        )
 
-            val dateReportsResponse = analyticsReporting.getReportsResponse(
-                metricExpressions = METRIC_EXPRESSIONS2,
-                dimensionNames = DIMENSION_NAMES2
-            )
+        val dateReportsResponse = analyticsReporting.getReportsResponse(
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
 
-            val halfwayMap = reportsResponseToStatisticsRepo(
-                dimensionEntity = ReferralEntity(referralReportsResponse),
-                metricExpressions = METRIC_EXPRESSIONS1,
-                dimensionNames = DIMENSION_NAMES1
-            )
+        val halfwayMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = ReferralEntity(referralReportsResponse),
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
+        )
 
-            val UUIDToDtoMap = reportsResponseToStatisticsRepo(
-                dimensionEntity = DateEntity(dateReportsResponse),
-                adDtoMap = halfwayMap,
-                metricExpressions = METRIC_EXPRESSIONS2,
-                dimensionNames = DIMENSION_NAMES2
-            )
+        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = DateEntity(dateReportsResponse),
+            adDtoMap = halfwayMap,
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
 
-            adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
-        }
+        adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
 
     @ConditionalOnProperty(
@@ -158,32 +152,29 @@ class GoogleAnalyticsService(
     //kanskje fixeddelay/fixedrate istedet for cron
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Oslo")
     private fun scheduledRepoUpdate() {
-        val analyticsReporting = initializeAnalyticsReporting()
-        if (analyticsReporting != null) {
-            val referralReportsResponse = analyticsReporting.getReportsResponse(
-                metricExpressions = METRIC_EXPRESSIONS1,
-                dimensionNames = DIMENSION_NAMES1
-            )
+        val referralReportsResponse = analyticsReporting.getReportsResponse(
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
+        )
 
-            val dateReportsResponse = analyticsReporting.getReportsResponse(
-                metricExpressions = METRIC_EXPRESSIONS2,
-                dimensionNames = DIMENSION_NAMES2
-            )
+        val dateReportsResponse = analyticsReporting.getReportsResponse(
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
 
-            val halfwayMap = reportsResponseToStatisticsRepo(
-                dimensionEntity = ReferralEntity(referralReportsResponse),
-                metricExpressions = METRIC_EXPRESSIONS1,
-                dimensionNames = DIMENSION_NAMES1
-            )
+        val halfwayMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = ReferralEntity(referralReportsResponse),
+            metricExpressions = METRIC_EXPRESSIONS1,
+            dimensionNames = DIMENSION_NAMES1
+        )
 
-            val UUIDToDtoMap = reportsResponseToStatisticsRepo(
-                dimensionEntity = DateEntity(dateReportsResponse),
-                adDtoMap = halfwayMap,
-                metricExpressions = METRIC_EXPRESSIONS2,
-                dimensionNames = DIMENSION_NAMES2
-            )
-            adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
-        }
+        val UUIDToDtoMap = reportsResponseToStatisticsRepo(
+            dimensionEntity = DateEntity(dateReportsResponse),
+            adDtoMap = halfwayMap,
+            metricExpressions = METRIC_EXPRESSIONS2,
+            dimensionNames = DIMENSION_NAMES2
+        )
+        adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
     }
 
     companion object {
