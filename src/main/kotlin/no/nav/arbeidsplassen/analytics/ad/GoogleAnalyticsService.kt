@@ -18,7 +18,6 @@ import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import no.nav.arbeidsplassen.analytics.ad.dto.DateEntity
 import no.nav.arbeidsplassen.analytics.ad.dto.DimensionEntity
 import no.nav.arbeidsplassen.analytics.ad.dto.ReferralEntity
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -27,7 +26,7 @@ import javax.annotation.PostConstruct
 
 @Service
 class GoogleAnalyticsService(
-    private val adAnalyticsRepository: AdAnalyticsRepository,
+    private val adAnalyticsRepository: AdAnalyticsRepository
 ) {
 
     private var analyticsReporting = initializeAnalyticsReporting()
