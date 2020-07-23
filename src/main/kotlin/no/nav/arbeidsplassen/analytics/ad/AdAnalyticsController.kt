@@ -11,7 +11,8 @@ import org.springframework.http.ResponseEntity
 @RestController
 @RequestMapping("ad")
 class AdAnalyticsController(
-    private val adAnalyticsRepository: AdAnalyticsRepository
+    private val adAnalyticsRepository: AdAnalyticsRepository,
+    private val googleAnalyticsService: GoogleAnalyticsService
 ) {
 
     @GetMapping(value = ["{UUID}"])
@@ -21,6 +22,10 @@ class AdAnalyticsController(
         return adAnalyticsRepository.getDtoFromUUID(UUID)
     }
 
+    @GetMapping("initialize")
+    fun initializeAnalytics(){
+        googleAnalyticsService.initializeAnalyticsReporting()
+    }
 
     @GetMapping("/internal/isAlive")
     fun isAlive(): ResponseEntity<String> =
