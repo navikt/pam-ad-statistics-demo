@@ -22,11 +22,6 @@ class AdAnalyticsController(
         return adAnalyticsRepository.getDtoFromUUID(UUID)
     }
 
-    @GetMapping("initialize")
-    fun initializeAnalytics(){
-        googleAnalyticsService.initializeAnalyticsReporting()
-    }
-
     @GetMapping("/internal/isAlive")
     fun isAlive(): ResponseEntity<String> =
         ResponseEntity("OK", HttpStatus.OK)

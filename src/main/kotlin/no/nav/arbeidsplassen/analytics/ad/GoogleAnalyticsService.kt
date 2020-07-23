@@ -29,9 +29,7 @@ class GoogleAnalyticsService(
     private val adAnalyticsRepository: AdAnalyticsRepository
 ) {
 
-    private val analyticsReporting: AnalyticsReporting? = initializeAnalyticsReporting()
-
-    fun initializeAnalyticsReporting(): AnalyticsReporting? {
+    private fun initializeAnalyticsReporting(): AnalyticsReporting? {
         try {
             val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
             val credential = GoogleCredentials
@@ -39,7 +37,6 @@ class GoogleAnalyticsService(
                 .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
             val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
-
             return AnalyticsReporting.Builder(
                 httpTransport,
                 JSON_FACTORY, requestInitializer
@@ -100,7 +97,7 @@ class GoogleAnalyticsService(
                 //kunne hatt return her
                 isNextToken = false
             } else {
-                val newReportsResponse = analyticsReporting?.getReportsResponse(
+                val newReportsResponse = initializeAnalyticsReporting()?.getReportsResponse(
                     metricExpressions = metricExpressions,
                     dimensionNames = dimensionNames,
                     pageToken = nextToken
@@ -126,6 +123,7 @@ class GoogleAnalyticsService(
 
     @PostConstruct
     private fun initializeRepo() {
+        val analyticsReporting = initializeAnalyticsReporting()
         if (analyticsReporting != null) {
             val referralReportsResponse = analyticsReporting.getReportsResponse(
                 metricExpressions = METRIC_EXPRESSIONS1,
@@ -160,6 +158,7 @@ class GoogleAnalyticsService(
     //kanskje fixeddelay/fixedrate istedet for cron
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Oslo")
     private fun scheduledRepoUpdate() {
+        val analyticsReporting = initializeAnalyticsReporting()
         if (analyticsReporting != null) {
             val referralReportsResponse = analyticsReporting.getReportsResponse(
                 metricExpressions = METRIC_EXPRESSIONS1,
