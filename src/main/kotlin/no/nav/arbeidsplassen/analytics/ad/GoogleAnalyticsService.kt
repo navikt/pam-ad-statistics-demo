@@ -18,7 +18,6 @@ import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import no.nav.arbeidsplassen.analytics.ad.dto.DateEntity
 import no.nav.arbeidsplassen.analytics.ad.dto.DimensionEntity
 import no.nav.arbeidsplassen.analytics.ad.dto.ReferralEntity
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -26,9 +25,7 @@ import javax.annotation.PostConstruct
 
 @Service
 class GoogleAnalyticsService(
-    private val adAnalyticsRepository: AdAnalyticsRepository,
-    @Value("\${GOOGLE_API_CREDENTIALS}")
-    private val googleApiCredentials: String
+    private val adAnalyticsRepository: AdAnalyticsRepository
 ) {
 
     private var analyticsReporting = initializeAnalyticsReporting()
@@ -37,7 +34,7 @@ class GoogleAnalyticsService(
         val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val credential = GoogleCredentials
-            .fromStream(googleApiCredentials.replace("\\\\n", "\\n").byteInputStream())
+            .fromStream(GoogleAnalyticsService::class.java.getResourceAsStream("/credentials.json"))
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
         val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
