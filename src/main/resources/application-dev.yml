@@ -1,0 +1,6 @@
+spring:
+  profile:
+    active: ${NAIS_CLUSTER_NAME:dev}
+
+secret:
+  credential.path: /secret/credential

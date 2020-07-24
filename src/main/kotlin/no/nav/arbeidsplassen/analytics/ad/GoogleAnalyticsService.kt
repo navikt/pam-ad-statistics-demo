@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
+//not a huge fan of having the googleAnalyticsQuery go through GoogleAnalyticsService to reach DimensionEntity
 class GoogleAnalyticsService(
-    private val adAnalyticsRepository: AdAnalyticsRepository
+    private val adAnalyticsRepository: AdAnalyticsRepository,
+    private val googleAnalyticsQuery: GoogleAnalyticsQuery
 ) {
 
     private fun reportsResponseToStatisticsRepo(
@@ -48,8 +50,8 @@ class GoogleAnalyticsService(
         val UUIDToDtoMap = reportsResponseToStatisticsRepo(
             "1DaysAgo",
             "today",
-            ReferralEntity(),
-            DateEntity()
+            ReferralEntity(googleAnalyticsQuery),
+            DateEntity(googleAnalyticsQuery)
         )
 
         adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)
@@ -64,8 +66,8 @@ class GoogleAnalyticsService(
         val UUIDToDtoMap = reportsResponseToStatisticsRepo(
             "1DaysAgo",
             "today",
-            ReferralEntity(),
-            DateEntity()
+            ReferralEntity(googleAnalyticsQuery),
+            DateEntity(googleAnalyticsQuery)
         )
 
         adAnalyticsRepository.updateUUIDToDtoMap(UUIDToDtoMap)

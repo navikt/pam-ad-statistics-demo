@@ -18,7 +18,7 @@ spring:
     banner-mode: "off"
     allow-bean-definition-overriding: true
   profiles:
-    active: ${NAIS_CLUSTER_NAME:dev}
+    active: local
 
 server:
   error:
@@ -30,3 +30,6 @@ server:
 
 scheduler:
   enable: true
+
+secret:
+  credential.path: src/main/resources/credentials.json
