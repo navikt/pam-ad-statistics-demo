@@ -1,9 +1,20 @@
 package no.nav.arbeidsplassen.analytics.ad
 
+
+import com.google.api.client.http.HttpRequestInitializer
+import com.google.api.client.http.HttpTransport
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
+import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
+import com.google.api.services.analyticsreporting.v4.model.*
+import com.google.auth.http.HttpCredentialsAdapter
+import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.io.File
 import javax.annotation.PostConstruct
 
 @Service
