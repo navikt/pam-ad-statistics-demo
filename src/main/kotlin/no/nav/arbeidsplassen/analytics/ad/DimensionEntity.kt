@@ -38,8 +38,6 @@ abstract class DimensionEntity(private val googleAnalyticsQuery: GoogleAnalytics
 
     //this is implying we only send one request
     private fun GetReportsResponse.getReport() = reports.first()
-
-
 }
 
 class ReferralEntity(googleAnalyticsQuery: GoogleAnalyticsQuery) : DimensionEntity(googleAnalyticsQuery) {
