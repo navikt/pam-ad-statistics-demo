@@ -28,5 +28,4 @@ class AdAnalyticsController(
     @GetMapping("/internal/isReady")
     fun isReady(): ResponseEntity<String> =
         ResponseEntity("OK", HttpStatus.OK)
-
 }
