@@ -1,8 +1,8 @@
 package no.nav.arbeidsplassen.analytics.ad
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
+import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
@@ -16,6 +16,7 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import no.nav.arbeidsplassen.analytics.ad.dto.AdDto
+import java.io.File
 
 abstract class DimensionEntity() {
     private var analyticsReporting = initializeAnalyticsReporting()
@@ -85,17 +86,19 @@ abstract class DimensionEntity() {
     private fun GetReportsResponse.getReport() = reports.first()
 
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
-        val httpTransport: HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
+        val httpTransport: HttpTransport = NetHttpTransport()
 
+        // TODO - environment specific file path in application.yml
         val credential = GoogleCredentials
-            .fromStream(GoogleAnalyticsService::class.java.getResourceAsStream("/credentials.json"))
+            .fromStream(File("/secret/credential/googleCredentials.json").inputStream())
             .createScoped(listOf(AnalyticsReportingScopes.ANALYTICS_READONLY))
 
         val requestInitializer: HttpRequestInitializer = HttpCredentialsAdapter(credential)
 
         return AnalyticsReporting.Builder(
             httpTransport,
-            JSON_FACTORY, requestInitializer
+            JSON_FACTORY,
+            requestInitializer
         )
             .setApplicationName(APPLICATION_NAME).build()
     }
