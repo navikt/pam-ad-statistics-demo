@@ -29,7 +29,7 @@ spec:
     enabled: true
     paths:
       - kvPath: /kv/preprod/sbs/pam-ad-statistics-demo/default
-        mountPath: /secret/credential
+        mountPath: /var/run/secrets/nais.io/vault
   webproxy: true
   prometheus:
     enabled: true
