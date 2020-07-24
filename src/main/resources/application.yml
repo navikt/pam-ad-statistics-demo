@@ -31,5 +31,3 @@ server:
 scheduler:
   enable: true
 
-secret:
-  credential.path: src/main/resources/credentials.json

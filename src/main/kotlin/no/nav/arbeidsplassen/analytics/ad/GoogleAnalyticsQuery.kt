@@ -16,11 +16,12 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.io.ByteArrayInputStream
 import java.io.File
 
 //er det egentlig en service?
 @Service
-class GoogleAnalyticsQuery(@Value("\${secret.credential.path}") private val credentialPath: String) {
+class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val credentialPath: String) {
     val analyticsReporting = initializeAnalyticsReporting()
 
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
