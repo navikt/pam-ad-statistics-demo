@@ -12,4 +12,11 @@ class CandidateStatisticsRepository {
     }
 
     fun getCandidateStatisticsDtoFromUUID(UUID: String) = UUIDToCandidateStatisticsDtoMap[UUID]
+
+    //debugging purposes
+    fun prettyPrint() {
+        UUIDToCandidateStatisticsDtoMap.forEach{ k, v ->
+            println("$k = ${v.pageViews}")
+        }
+    }
 }

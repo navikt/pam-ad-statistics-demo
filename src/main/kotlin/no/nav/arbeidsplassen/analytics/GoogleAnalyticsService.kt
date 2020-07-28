@@ -2,6 +2,7 @@ package no.nav.arbeidsplassen.analytics
 
 import no.nav.arbeidsplassen.analytics.ad.AdStatisticsRepository
 import no.nav.arbeidsplassen.analytics.candidate.CandidateStatisticsRepository
+import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -26,8 +27,8 @@ class GoogleAnalyticsService(
             dimensionEntity.setDateRange(startDate, endDate)
             while (dimensionEntity.nextPage()) {
                 dimensionEntity.rows.forEach { row ->
-                    val adPath = dimensionEntity.getPath(row)
-                    StatisticsDtoMap[adPath] = dimensionEntity.toStatisticsDto(row) mergeWith StatisticsDtoMap[adPath]
+                    val path = dimensionEntity.getPath(row)
+                    StatisticsDtoMap[path] = dimensionEntity.toStatisticsDto(row) mergeWith StatisticsDtoMap[path]
                 }
             }
         }

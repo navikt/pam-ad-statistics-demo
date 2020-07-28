@@ -1,4 +1,4 @@
-package no.nav.arbeidsplassen.analytics
+package no.nav.arbeidsplassen.analytics.googleapi
 
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport

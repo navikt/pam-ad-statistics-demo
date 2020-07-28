@@ -4,6 +4,7 @@ import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse
 import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import no.nav.arbeidsplassen.analytics.ad.dto.AdStatisticsDto
 import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
+import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
 
 abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalyticsQuery: GoogleAnalyticsQuery) {
     var rows = listOf<ReportRow>()
@@ -50,7 +51,7 @@ class ReferralEntity(
 ) : DimensionEntity<AdStatisticsDto>(googleAnalyticsQuery) {
     override val metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage")
     override val dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
-    override val filterExpression = "ga:pagePath=~^/stillinger"
+    override val filterExpression = "ga:pagePath=~^/stillinger/stilling"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<AdStatisticsDto> {
         return AdStatisticsDto(
@@ -71,7 +72,7 @@ class DateEntity(
 ) : DimensionEntity<AdStatisticsDto>(googleAnalyticsQuery) {
     override val metricExpressions = listOf("ga:pageviews")
     override val dimensionNames = listOf("ga:pagePath", "ga:date")
-    override val filterExpression = "ga:pagePath=~^/stillinger"
+    override val filterExpression = "ga:pagePath=~^/stillinger/stilling"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<AdStatisticsDto> {
         return AdStatisticsDto(
@@ -80,7 +81,7 @@ class DateEntity(
         )
     }
 
-    override fun getPath(row: ReportRow): String {
+    override fun getPath(row: ReportRow): String{
         return row.dimensions.first().split("/").last()
     }
 }
@@ -88,9 +89,9 @@ class DateEntity(
 class CandidateEntity(
     googleAnalyticsQuery: GoogleAnalyticsQuery
 ) : DimensionEntity<CandidateStatisticsDto>(googleAnalyticsQuery) {
-    override val metricExpressions = listOf("ga:pageviews")
+    override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
-    override val filterExpression = "ga:pagePath=~^/kandidater"
+    override val filterExpression = "ga:pagePath=~^/kandidater/cv\\?kandidatNr;ga:pagePath!@-"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateStatisticsDto> {
         return CandidateStatisticsDto(
@@ -98,13 +99,16 @@ class CandidateEntity(
         )
     }
 
+    //hardkode deluxe up in here
     override fun getPath(row: ReportRow): String {
-        //splitter på & i tilfelle det kommer flere parametere en dag
-        //antar kandidatnr er første parameteren
-        //kan også bruke URL implm fra java og hente ut params direkte
-        return row.dimensions.first().split("/").last().split("&").first().split("=").last()
+        return row.dimensions.first()
+            .split("/").last()
+            .split("?").last()
+            .split("=").last()
     }
+
 }
 
 private fun ReportRow.getMetric() = metrics.first().getValues()
+
 
