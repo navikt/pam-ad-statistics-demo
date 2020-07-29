@@ -17,7 +17,7 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalytics
 
     abstract fun toStatisticsDto(row: ReportRow): StatisticsDto<T>
 
-    abstract fun getPath(row: ReportRow): String
+    abstract fun getPath(row: ReportRow): List<String>
 
     fun setDateRange(startDate: String, endDate: String) {
         this.startDate = startDate
@@ -62,8 +62,8 @@ class ReferralEntity(
         )
     }
 
-    override fun getPath(row: ReportRow): String {
-        return row.dimensions.first().split("/").last()
+    override fun getPath(row: ReportRow):List<String> {
+        return listOf(row.dimensions.first().split("/").last())
     }
 }
 
@@ -81,8 +81,8 @@ class DateEntity(
         )
     }
 
-    override fun getPath(row: ReportRow): String{
-        return row.dimensions.first().split("/").last()
+    override fun getPath(row: ReportRow): List<String>{
+        return listOf(row.dimensions.first().split("/").last())
     }
 }
 
@@ -104,8 +104,7 @@ class CandidateEntity(
         )
     }
 
-    //hardkode deluxe up in here
-    override fun getPath(row: ReportRow): String {
+    override fun getPath(row: ReportRow): List<String> {
         /*
         return row.dimensions.first()
             .split("/").last()
@@ -113,7 +112,25 @@ class CandidateEntity(
             .split("=").last()
 
          */
-        return row.dimensions.first()
+        return queryStringToKey(row.dimensions.first().split("/").last())
+    }
+
+    private fun queryStringToKey(queryString: String): List<String> {
+        val pathAndQuery = queryString.split("?")
+        return if (pathAndQuery.first() == "cv") {
+            listOf(pathAndQuery.last().split("&").first().split("=").last())
+        } else {
+            val filterList = mutableListOf<String>()
+            filterList.apply {
+                pathAndQuery.last().split("&").forEach {filter ->
+                    val filterExpression = filter.split("=")
+                    filterExpression.last().split("_").forEach { filterValue ->
+                        filterList.add("${filterExpression.first()}=${filterValue}")
+                    }
+                }
+            }
+            filterList
+        }
     }
 
 }

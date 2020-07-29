@@ -28,7 +28,9 @@ class GoogleAnalyticsService(
             while (dimensionEntity.nextPage()) {
                 dimensionEntity.rows.forEach { row ->
                     val path = dimensionEntity.getPath(row)
-                    StatisticsDtoMap[path] = dimensionEntity.toStatisticsDto(row) mergeWith StatisticsDtoMap[path]
+                    path.forEach { key ->
+                        StatisticsDtoMap[key] = dimensionEntity.toStatisticsDto(row) mergeWith StatisticsDtoMap[key]
+                    }
                 }
             }
         }
