@@ -63,7 +63,7 @@ class ReferralEntity(
         )
     }
 
-    override fun getKey(row: ReportRow):List<String> {
+    override fun getKey(row: ReportRow): List<String> {
         return listOf(row.dimensions.first().split("/").last())
     }
 }
@@ -82,7 +82,7 @@ class DateEntity(
         )
     }
 
-    override fun getKey(row: ReportRow): List<String>{
+    override fun getKey(row: ReportRow): List<String> {
         return listOf(row.dimensions.first().split("/").last())
     }
 }
@@ -94,8 +94,8 @@ class CandidateEntity(
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
         "ga:pagePath=~^/kandidater/cv\\?kandidatNr," +
-        "ga:pagePath=~^/kandidater-next/cv\\?kandidatNr;" +
-        "ga:pagePath!~^.*........-....-....-....-.............*$"
+            "ga:pagePath=~^/kandidater-next/cv\\?kandidatNr;" +
+            "ga:pagePath!~^.*........-....-....-....-.............*$"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateStatisticsDto> {
         return CandidateStatisticsDto(
@@ -104,13 +104,14 @@ class CandidateEntity(
     }
 
     override fun getKey(row: ReportRow): List<String> {
-        return listOf(row.dimensions.first()
-            .split("/").last()
-            .split("?").last()
-            .split("&").first()
-            .split("=").last())
+        return listOf(
+            row.dimensions.first()
+                .split("/").last()
+                .split("?").last()
+                .split("&").first()
+                .split("=").last()
+        )
     }
-
 }
 
 class CandidateFilterEntity(
@@ -120,8 +121,8 @@ class CandidateFilterEntity(
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
         "ga:pagePath=~^/kandidater\\?," +
-        "ga:pagePath=~^/kandidater-next\\?;" +
-        "ga:pagePath!~^.*........-....-....-....-.............*$"
+            "ga:pagePath=~^/kandidater-next\\?;" +
+            "ga:pagePath!~^.*........-....-....-....-.............*$"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateFilterStatisticsDto> {
         return CandidateFilterStatisticsDto(
@@ -135,7 +136,7 @@ class CandidateFilterEntity(
 
     private fun queryStringToKey(queryString: String): List<String> {
         mutableListOf<String>().apply {
-            queryString.split("?").last().split("&").forEach {filter ->
+            queryString.split("?").last().split("&").forEach { filter ->
                 val filterExpression = filter.split("=")
                 filterExpression.last().split("_").forEach { filterValue ->
                     this.add("${filterExpression.first().toLowerCase()}=${filterValue.toLowerCase()}")
@@ -144,7 +145,6 @@ class CandidateFilterEntity(
             return this
         }
     }
-
 }
 
 private fun ReportRow.getMetric() = metrics.first().getValues()

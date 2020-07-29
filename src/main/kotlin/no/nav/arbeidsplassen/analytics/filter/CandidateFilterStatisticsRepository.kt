@@ -9,7 +9,9 @@ import org.springframework.stereotype.Repository
 class CandidateFilterStatisticsRepository {
     private var UUIDToCandidateFilterStatisticsDtoMap = emptyMap<String, CandidateFilterStatisticsDto>()
 
-    fun updateUUIDToCandidateFilterStatisticsDtoMap(UUIDToCandidateFilterStatisticsDtoMap: Map<String, CandidateFilterStatisticsDto>) {
+    fun updateUUIDToCandidateFilterStatisticsDtoMap(
+        UUIDToCandidateFilterStatisticsDtoMap: Map<String, CandidateFilterStatisticsDto>
+    ) {
         this.UUIDToCandidateFilterStatisticsDtoMap = UUIDToCandidateFilterStatisticsDtoMap
     }
 

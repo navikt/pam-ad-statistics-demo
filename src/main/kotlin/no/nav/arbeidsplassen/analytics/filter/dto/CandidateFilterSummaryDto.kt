@@ -14,5 +14,4 @@ class CandidateFilterSummaryDto(
             )
         } ?: this
     }
-
 }
