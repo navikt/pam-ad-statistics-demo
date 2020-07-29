@@ -43,7 +43,7 @@ class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val
         metricExpressions: List<String>,
         dimensionNames: List<String>,
         filterExpression: String,
-        pageToken: String? = null,
+        pageToken: String?,
         startDate: String,
         endDate: String
     ): GetReportsResponse {
@@ -75,7 +75,7 @@ class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val
         metricExpressions: List<String>,
         dimensionNames: List<String>,
         filterExpression: String,
-        pageToken: String? = null,
+        pageToken: String?,
         startDate: String,
         endDate: String
     ): GetReportsResponse {

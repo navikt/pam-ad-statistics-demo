@@ -4,11 +4,12 @@ import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse
 import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import no.nav.arbeidsplassen.analytics.ad.dto.AdStatisticsDto
 import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
+import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
 
 abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalyticsQuery: GoogleAnalyticsQuery) {
     var rows = listOf<ReportRow>()
-    private var nextPageToken: String? = ""
+    var nextPageToken: String? = "init"
     abstract val metricExpressions: List<String>
     abstract val dimensionNames: List<String>
     abstract val filterExpression: String
@@ -17,7 +18,7 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalytics
 
     abstract fun toStatisticsDto(row: ReportRow): StatisticsDto<T>
 
-    abstract fun getPath(row: ReportRow): List<String>
+    abstract fun getKey(row: ReportRow): List<String>
 
     fun setDateRange(startDate: String, endDate: String) {
         this.startDate = startDate
@@ -62,7 +63,7 @@ class ReferralEntity(
         )
     }
 
-    override fun getPath(row: ReportRow):List<String> {
+    override fun getKey(row: ReportRow):List<String> {
         return listOf(row.dimensions.first().split("/").last())
     }
 }
@@ -81,7 +82,7 @@ class DateEntity(
         )
     }
 
-    override fun getPath(row: ReportRow): List<String>{
+    override fun getKey(row: ReportRow): List<String>{
         return listOf(row.dimensions.first().split("/").last())
     }
 }
@@ -93,9 +94,7 @@ class CandidateEntity(
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
         "ga:pagePath=~^/kandidater/cv\\?kandidatNr," +
-        "ga:pagePath=~^/kandidater-next/cv\\?kandidatNr," +
-        "ga:pagePath=~^/kandidater\\?," +
-        "ga:pagePath=~^/kandidater-next\\?;" +
+        "ga:pagePath=~^/kandidater-next/cv\\?kandidatNr;" +
         "ga:pagePath!~^.*........-....-....-....-.............*$"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateStatisticsDto> {
@@ -104,32 +103,45 @@ class CandidateEntity(
         )
     }
 
-    override fun getPath(row: ReportRow): List<String> {
-        /*
-        return row.dimensions.first()
+    override fun getKey(row: ReportRow): List<String> {
+        return listOf(row.dimensions.first()
             .split("/").last()
             .split("?").last()
-            .split("=").last()
+            .split("&").first()
+            .split("=").last())
+    }
 
-         */
+}
+
+class CandidateFilterEntity(
+    googleAnalyticsQuery: GoogleAnalyticsQuery
+) : DimensionEntity<CandidateFilterStatisticsDto>(googleAnalyticsQuery) {
+    override val metricExpressions = listOf("ga:uniquePageviews")
+    override val dimensionNames = listOf("ga:pagePath")
+    override val filterExpression =
+        "ga:pagePath=~^/kandidater\\?," +
+        "ga:pagePath=~^/kandidater-next\\?;" +
+        "ga:pagePath!~^.*........-....-....-....-.............*$"
+
+    override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateFilterStatisticsDto> {
+        return CandidateFilterStatisticsDto(
+            pageViews = row.getMetric().first().toInt()
+        )
+    }
+
+    override fun getKey(row: ReportRow): List<String> {
         return queryStringToKey(row.dimensions.first().split("/").last())
     }
 
     private fun queryStringToKey(queryString: String): List<String> {
-        val pathAndQuery = queryString.split("?")
-        return if (pathAndQuery.first() == "cv") {
-            listOf(pathAndQuery.last().split("&").first().split("=").last())
-        } else {
-            val filterList = mutableListOf<String>()
-            filterList.apply {
-                pathAndQuery.last().split("&").forEach {filter ->
-                    val filterExpression = filter.split("=")
-                    filterExpression.last().split("_").forEach { filterValue ->
-                        filterList.add("${filterExpression.first()}=${filterValue}")
-                    }
+        mutableListOf<String>().apply {
+            queryString.split("?").last().split("&").forEach {filter ->
+                val filterExpression = filter.split("=")
+                filterExpression.last().split("_").forEach { filterValue ->
+                    this.add("${filterExpression.first().toLowerCase()}=${filterValue.toLowerCase()}")
                 }
             }
-            filterList
+            return this
         }
     }
 

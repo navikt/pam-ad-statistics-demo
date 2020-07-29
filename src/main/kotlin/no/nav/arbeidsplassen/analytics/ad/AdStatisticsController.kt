@@ -13,7 +13,7 @@ class AdStatisticsController(
 ) {
 
     @GetMapping(value = ["/{UUID}"])
-    fun getAdAnalyticsData(
+    fun getAdStatisticsData(
         @PathVariable("UUID") UUID: String
     ): AdStatisticsDto? {
         return adStatisticsRepository.getAdStatisticsDtoFromUUID(UUID)

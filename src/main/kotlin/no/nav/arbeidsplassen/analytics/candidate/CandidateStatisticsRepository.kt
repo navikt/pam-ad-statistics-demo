@@ -15,7 +15,7 @@ class CandidateStatisticsRepository {
 
     //debugging purposes
     fun prettyPrint() {
-        UUIDToCandidateStatisticsDtoMap.forEach{ k, v ->
+        UUIDToCandidateStatisticsDtoMap.forEach{ (k, v) ->
             println("$k = ${v.pageViews}")
         }
     }

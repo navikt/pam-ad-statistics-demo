@@ -2,6 +2,7 @@ package no.nav.arbeidsplassen.analytics
 
 import no.nav.arbeidsplassen.analytics.ad.AdStatisticsRepository
 import no.nav.arbeidsplassen.analytics.candidate.CandidateStatisticsRepository
+import no.nav.arbeidsplassen.analytics.filter.CandidateFilterStatisticsRepository
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
@@ -13,6 +14,7 @@ import javax.annotation.PostConstruct
 class GoogleAnalyticsService(
     private val adStatisticsRepository: AdStatisticsRepository,
     private val candidateStatisticsRepository: CandidateStatisticsRepository,
+    private val candidateFilterStatisticsRepository: CandidateFilterStatisticsRepository,
     private val googleAnalyticsQuery: GoogleAnalyticsQuery
 ) {
 
@@ -21,20 +23,20 @@ class GoogleAnalyticsService(
         endDate: String,
         vararg dimensionEntities: DimensionEntity<T>
     ): MutableMap<String, T> {
-        val StatisticsDtoMap = mutableMapOf<String, T>()
+        val statisticsDtoMap = mutableMapOf<String, T>()
         //kanskje litt mange foreaches
         dimensionEntities.forEach { dimensionEntity ->
             dimensionEntity.setDateRange(startDate, endDate)
             while (dimensionEntity.nextPage()) {
                 dimensionEntity.rows.forEach { row ->
-                    val path = dimensionEntity.getPath(row)
+                    val path = dimensionEntity.getKey(row)
                     path.forEach { key ->
-                        StatisticsDtoMap[key] = dimensionEntity.toStatisticsDto(row) mergeWith StatisticsDtoMap[key]
+                        statisticsDtoMap[key] = dimensionEntity.toStatisticsDto(row) mergeWith statisticsDtoMap[key]
                     }
                 }
             }
         }
-        return StatisticsDtoMap
+        return statisticsDtoMap
     }
 
     @PostConstruct
@@ -53,6 +55,13 @@ class GoogleAnalyticsService(
             CandidateEntity(googleAnalyticsQuery)
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
+
+        val UUIDToCandidateFilterDtoMap = reportsResponseToStatisticsRepo(
+            "1DaysAgo",
+            "today",
+            CandidateFilterEntity(googleAnalyticsQuery)
+        )
+        candidateFilterStatisticsRepository.updateUUIDToCandidateFilterStatisticsDtoMap(UUIDToCandidateFilterDtoMap)
     }
 
     @ConditionalOnProperty(
@@ -75,5 +84,12 @@ class GoogleAnalyticsService(
             CandidateEntity(googleAnalyticsQuery)
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
+
+        val UUIDToCandidateFilterDtoMap = reportsResponseToStatisticsRepo(
+            "1DaysAgo",
+            "today",
+            CandidateFilterEntity(googleAnalyticsQuery)
+        )
+        candidateFilterStatisticsRepository.updateUUIDToCandidateFilterStatisticsDtoMap(UUIDToCandidateFilterDtoMap)
     }
 }
