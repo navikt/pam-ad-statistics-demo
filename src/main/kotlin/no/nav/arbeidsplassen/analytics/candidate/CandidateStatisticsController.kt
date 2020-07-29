@@ -15,6 +15,7 @@ class CandidateStatisticsController(
     fun getCandidateStatisticsData(
         @PathVariable("UUID") UUID: String
     ): CandidateStatisticsDto? {
+        candidateStatisticsRepository.prettyPrint()
         return candidateStatisticsRepository.getCandidateStatisticsDtoFromUUID(UUID)
     }
 }

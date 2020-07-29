@@ -91,7 +91,12 @@ class CandidateEntity(
 ) : DimensionEntity<CandidateStatisticsDto>(googleAnalyticsQuery) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
-    override val filterExpression = "ga:pagePath=~^/kandidater/cv\\?kandidatNr;ga:pagePath!@-"
+    override val filterExpression =
+        "ga:pagePath=~^/kandidater/cv\\?kandidatNr," +
+        "ga:pagePath=~^/kandidater-next/cv\\?kandidatNr," +
+        "ga:pagePath=~^/kandidater\\?," +
+        "ga:pagePath=~^/kandidater-next\\?;" +
+        "ga:pagePath!~^.*........-....-....-....-.............*$"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateStatisticsDto> {
         return CandidateStatisticsDto(
@@ -101,10 +106,14 @@ class CandidateEntity(
 
     //hardkode deluxe up in here
     override fun getPath(row: ReportRow): String {
+        /*
         return row.dimensions.first()
             .split("/").last()
             .split("?").last()
             .split("=").last()
+
+         */
+        return row.dimensions.first()
     }
 
 }
