@@ -144,12 +144,12 @@ class CandidateFilterEntity(
                 nameAndValueToString(queryNameAndValues.first(), queryNameAndValues.last().split("_").last())
             )
         } else {
-            pathAndQueries.last().split("&").map { filter ->
+            pathAndQueries.last().split("&").flatMap { filter ->
                 val queryNameAndValues = filter.split("=")
                 queryNameAndValues.last().split("_").map { filterValue ->
                     nameAndValueToString(queryNameAndValues.first(), filterValue)
                 }
-            }.flatten()
+            }
         }
     }
 
