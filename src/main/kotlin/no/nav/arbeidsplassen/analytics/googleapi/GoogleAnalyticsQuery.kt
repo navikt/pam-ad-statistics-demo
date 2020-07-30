@@ -1,4 +1,4 @@
-package no.nav.arbeidsplassen.analytics.ad
+package no.nav.arbeidsplassen.analytics.googleapi
 
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
@@ -16,7 +16,6 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.ByteArrayInputStream
 import java.io.File
 
 //er det egentlig en service?
@@ -43,7 +42,8 @@ class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val
     private fun AnalyticsReporting.getReportsResponse(
         metricExpressions: List<String>,
         dimensionNames: List<String>,
-        pageToken: String? = null,
+        filterExpression: String,
+        pageToken: String?,
         startDate: String,
         endDate: String
     ): GetReportsResponse {
@@ -60,7 +60,7 @@ class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val
             .setDateRanges(listOf(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
-            .setFiltersExpression("ga:pagePath=~^/stillinger")
+            .setFiltersExpression(filterExpression)
             //burde være variabel
             .setPageSize(10000)
 
@@ -74,13 +74,15 @@ class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val
     fun getReportsResponse(
         metricExpressions: List<String>,
         dimensionNames: List<String>,
-        pageToken: String? = null,
+        filterExpression: String,
+        pageToken: String?,
         startDate: String,
         endDate: String
     ): GetReportsResponse {
         return analyticsReporting.getReportsResponse(
             metricExpressions,
             dimensionNames,
+            filterExpression,
             pageToken,
             startDate,
             endDate

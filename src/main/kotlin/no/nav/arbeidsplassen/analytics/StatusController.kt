@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("internal")
-class GetStatusController {
+class StatusController {
 
     @GetMapping("/isAlive")
     fun isAlive(): ResponseEntity<String> =
