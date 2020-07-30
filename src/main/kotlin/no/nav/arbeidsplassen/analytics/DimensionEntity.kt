@@ -135,15 +135,24 @@ class CandidateFilterEntity(
     }
 
     private fun queryStringToKey(queryString: String): List<String> {
-        mutableListOf<String>().apply {
-            queryString.split("?").last().split("&").forEach { filter ->
-                val filterExpression = filter.split("=")
-                filterExpression.last().split("_").forEach { filterValue ->
-                    this.add("${filterExpression.first().toLowerCase()}=${filterValue.toLowerCase()}")
+        val pathAndQueries = queryString.split("?")
+        return if(pathAndQueries.first() == "kandidater") {
+            val queryNameAndValues = pathAndQueries.last().split("&").last().split("=")
+            listOf(
+                nameAndValueToString(queryNameAndValues.first(), queryNameAndValues.last().split("_").last())
+            )
+        } else {
+            pathAndQueries.last().split("&").map { filter ->
+                val queryNameAndValues = filter.split("=")
+                queryNameAndValues.last().split("_").map { filterValue ->
+                    nameAndValueToString(queryNameAndValues.first(), filterValue)
                 }
-            }
-            return this
+            }.flatten()
         }
+    }
+
+    private fun nameAndValueToString(name: String, value: String): String {
+        return "${name.toLowerCase()}=${value.toLowerCase()}"
     }
 }
 
