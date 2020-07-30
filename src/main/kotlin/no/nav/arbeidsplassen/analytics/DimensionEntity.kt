@@ -6,6 +6,7 @@ import no.nav.arbeidsplassen.analytics.ad.dto.AdStatisticsDto
 import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
 import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
+import org.springframework.beans.factory.annotation.Value
 
 abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalyticsQuery: GoogleAnalyticsQuery) {
     var rows = listOf<ReportRow>()
@@ -122,6 +123,7 @@ class CandidateFilterEntity(
     override val filterExpression =
         "ga:pagePath=~^/kandidater\\?," +
             "ga:pagePath=~^/kandidater-next\\?;" +
+            //trenger ikke denne tror jeg men spiller det safe
             "ga:pagePath!~^.*........-....-....-....-.............*$"
 
     override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateFilterStatisticsDto> {

@@ -31,3 +31,9 @@ server:
 scheduler:
   enable: true
 
+pagesize:
+  value: 10000
+
+date:
+  start: 1DaysAgo
+  end: today

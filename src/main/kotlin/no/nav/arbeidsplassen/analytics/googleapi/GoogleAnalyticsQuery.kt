@@ -20,7 +20,10 @@ import java.io.File
 
 //er det egentlig en service?
 @Service
-class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val credentialPath: String) {
+class GoogleAnalyticsQuery(
+    @Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val credentialPath: String,
+    @Value("\${pagesize.value}") private val pagesize: Int
+) {
     val analyticsReporting = initializeAnalyticsReporting()
 
     private fun initializeAnalyticsReporting(): AnalyticsReporting {
@@ -61,8 +64,7 @@ class GoogleAnalyticsQuery(@Value("\${GOOGLE_API_CREDENTIALS_PATH}") private val
             .setMetrics(metrics)
             .setDimensions(dimensions)
             .setFiltersExpression(filterExpression)
-            //burde være variabel
-            .setPageSize(10000)
+            .setPageSize(pagesize)
 
         pageToken?.let {
             request.pageToken = it
