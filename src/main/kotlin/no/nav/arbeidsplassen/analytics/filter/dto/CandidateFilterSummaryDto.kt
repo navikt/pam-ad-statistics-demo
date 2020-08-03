@@ -7,8 +7,8 @@ class CandidateFilterSummaryDto(
     var filterValues: List<String> = listOf()
 ) : StatisticsDto<CandidateFilterSummaryDto> {
     override infix fun mergeWith(other: CandidateFilterSummaryDto) =
-            CandidateFilterSummaryDto(
-                pageViews = this.pageViews + other.pageViews,
-                filterValues = this.filterValues + other.filterValues
-            )
+        CandidateFilterSummaryDto(
+            pageViews = this.pageViews + other.pageViews,
+            filterValues = this.filterValues + other.filterValues
+        )
 }

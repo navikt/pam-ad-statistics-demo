@@ -1,10 +1,10 @@
 package no.nav.arbeidsplassen.analytics
 
+import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import no.nav.arbeidsplassen.analytics.ad.AdStatisticsRepository
 import no.nav.arbeidsplassen.analytics.candidate.CandidateStatisticsRepository
 import no.nav.arbeidsplassen.analytics.filter.CandidateFilterStatisticsRepository
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
-import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsReport
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -25,31 +25,25 @@ class GoogleAnalyticsService(
         vararg dimensionEntities: DimensionEntity<T>
     ): Map<String, T> {
         return dimensionEntities.map { dimensionEntity ->
-            val list = mutableListOf<GoogleAnalyticsReport>()
+            val listOfGoogleAnalyticsReportsRows = mutableListOf<ReportRow>()
             var pageToken: String? = "init"
             dimensionEntity.setDateRange(startDate, endDate)
             while (pageToken != null) {
-                list.add(dimensionEntity.getGoogleAnalyticsReport(pageToken))
-                pageToken = list.last().nextPageToken
+                val googleAnalyticsReport = dimensionEntity.getGoogleAnalyticsReport(pageToken)
+                listOfGoogleAnalyticsReportsRows += googleAnalyticsReport.rows
+                pageToken = googleAnalyticsReport.nextPageToken
             }
-            dimensionEntity.something(list)
-        }.reduce { acc, map -> acc.mergeEm(map) }
+            dimensionEntity.googleAnalyticsReportsToStatisticsDtoMap(listOfGoogleAnalyticsReportsRows)
+        }.reduce { acc, map -> acc.mergeStatisticsDtoMaps(map) }
     }
 
-    private fun <T : StatisticsDto<T>> DimensionEntity<T>.something(list: List<GoogleAnalyticsReport>): Map<String, T> {
-        val ting = list.flatMap {googleAnalyticsReport ->
-            googleAnalyticsReport.rows
-        }
-        return ting.map {row ->
-            getKey(row).map { it to toStatisticsDto(row) }
-        }.flatten().groupBy ({it.first}, {it.second})
-            .mapValues { (_, values) -> values.reduce { acc, statisticsDto ->  acc.mergeWith(statisticsDto)}}
-    }
-
-    private fun <T: StatisticsDto<T>> Map<String, T>.mergeEm(other: Map<String, T>): Map<String, T> {
+    private fun <T : StatisticsDto<T>> Map<String, T>.mergeStatisticsDtoMaps(other: Map<String, T>): Map<String, T> {
         return (this.asSequence() + other.asSequence())
-            .groupBy ({it.key}, {it.value})
-            .mapValues { (_, values) -> values.reduce { acc, statisticsDto -> acc.mergeWith(statisticsDto)} }
+            .groupBy(
+                { statisticsDtoMapEntry -> statisticsDtoMapEntry.key },
+                { statisticsDtoMapEntry -> statisticsDtoMapEntry.value }
+            )
+            .mapValues { (_, values) -> values.reduce { acc, statisticsDto -> acc.mergeWith(statisticsDto) } }
     }
 
     @PostConstruct

@@ -26,16 +26,21 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalytics
 
     fun getGoogleAnalyticsReport(pageToken: String): GoogleAnalyticsReport {
         return googleAnalyticsQuery.getGoogleAnalyticsReport(
-            metricExpressions= metricExpressions,
-            dimensionNames= dimensionNames,
-            filterExpression= filterExpression,
-            pageToken= pageToken,
-            startDate= startDate,
-            endDate= endDate
+            metricExpressions = metricExpressions,
+            dimensionNames = dimensionNames,
+            filterExpression = filterExpression,
+            pageToken = pageToken,
+            startDate = startDate,
+            endDate = endDate
         )
     }
 
-
+    fun googleAnalyticsReportsToStatisticsDtoMap(listOfGoogleAnalyticsReportsRows: List<ReportRow>): Map<String, T> {
+        return listOfGoogleAnalyticsReportsRows.map { row ->
+            getKey(row).map { it to toStatisticsDto(row) }
+        }.flatten().groupBy({ it.first }, { it.second })
+            .mapValues { (_, values) -> values.reduce { acc, statisticsDto -> acc.mergeWith(statisticsDto) } }
+    }
 }
 
 class ReferralEntity(
@@ -128,7 +133,7 @@ class CandidateFilterEntity(
 
     private fun queryStringToKey(queryString: String): List<String> {
         val pathAndQueries = queryString.split("?")
-        return if(pathAndQueries.first() == "kandidater") {
+        return if (pathAndQueries.first() == "kandidater") {
             val queryNameAndValues = pathAndQueries.last().split("&").last().split("=")
             listOf(
                 nameAndValueToString(queryNameAndValues.first(), queryNameAndValues.last().split("_").last())
