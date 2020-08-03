@@ -10,16 +10,14 @@ class AdStatisticsDto(
     var dates: List<String> = listOf(),
     var viewsPerDate: List<Int> = listOf()
 ) : StatisticsDto<AdStatisticsDto> {
-    override infix fun mergeWith(other: AdStatisticsDto?): AdStatisticsDto {
-        return other?.let {
+
+    override infix fun mergeWith(other: AdStatisticsDto) =
             AdStatisticsDto(
-                pageViews = it.pageViews + this.pageViews,
-                averageTimeOnPage = it.averageTimeOnPage + this.averageTimeOnPage,
-                referrals = it.referrals + this.referrals,
-                viewsPerReferral = it.viewsPerReferral + this.viewsPerReferral,
-                dates = it.dates + this.dates,
-                viewsPerDate = it.viewsPerDate + this.viewsPerDate
+                pageViews = this.pageViews + other.pageViews,
+                averageTimeOnPage = this.averageTimeOnPage + other.averageTimeOnPage,
+                referrals = this.referrals + other.referrals,
+                viewsPerReferral = this.viewsPerReferral + other.viewsPerReferral,
+                dates = this.dates + other.dates,
+                viewsPerDate = this.viewsPerDate + other.viewsPerDate
             )
-        } ?: this
-    }
 }

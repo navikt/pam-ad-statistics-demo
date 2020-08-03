@@ -5,11 +5,8 @@ import no.nav.arbeidsplassen.analytics.StatisticsDto
 class CandidateStatisticsDto(
     var pageViews: Int = 0
 ) : StatisticsDto<CandidateStatisticsDto> {
-    override infix fun mergeWith(other: CandidateStatisticsDto?): CandidateStatisticsDto {
-        return other?.let {
+    override infix fun mergeWith(other: CandidateStatisticsDto) =
             CandidateStatisticsDto(
-                pageViews = it.pageViews + this.pageViews
+                pageViews = this.pageViews + other.pageViews
             )
-        } ?: this
-    }
 }

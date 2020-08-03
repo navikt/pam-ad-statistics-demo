@@ -1,23 +1,21 @@
 package no.nav.arbeidsplassen.analytics
 
-import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse
 import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import no.nav.arbeidsplassen.analytics.ad.dto.AdStatisticsDto
 import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
 import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
-import org.springframework.beans.factory.annotation.Value
+import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsReport
 
 abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalyticsQuery: GoogleAnalyticsQuery) {
     var rows = listOf<ReportRow>()
-    var nextPageToken: String? = "init"
     abstract val metricExpressions: List<String>
     abstract val dimensionNames: List<String>
     abstract val filterExpression: String
     private var startDate = "1DaysAgo"
     private var endDate = "today"
 
-    abstract fun toStatisticsDto(row: ReportRow): StatisticsDto<T>
+    abstract fun toStatisticsDto(row: ReportRow): T
 
     abstract fun getKey(row: ReportRow): List<String>
 
@@ -26,26 +24,18 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalytics
         this.endDate = endDate
     }
 
-    fun nextPage(): Boolean {
-        return nextPageToken?.let {
-            val reportsResponse =
-                googleAnalyticsQuery.getReportsResponse(
-                    metricExpressions = metricExpressions,
-                    dimensionNames = dimensionNames,
-                    filterExpression = filterExpression,
-                    pageToken = nextPageToken,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-
-            rows = reportsResponse.getReport().data.rows
-            nextPageToken = reportsResponse.getReport().nextPageToken
-            true
-        } ?: false
+    fun getGoogleAnalyticsReport(pageToken: String): GoogleAnalyticsReport {
+        return googleAnalyticsQuery.getGoogleAnalyticsReport(
+            metricExpressions= metricExpressions,
+            dimensionNames= dimensionNames,
+            filterExpression= filterExpression,
+            pageToken= pageToken,
+            startDate= startDate,
+            endDate= endDate
+        )
     }
 
-    //this is implying we only send one request
-    private fun GetReportsResponse.getReport() = reports.first()
+
 }
 
 class ReferralEntity(
@@ -53,9 +43,9 @@ class ReferralEntity(
 ) : DimensionEntity<AdStatisticsDto>(googleAnalyticsQuery) {
     override val metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage")
     override val dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
-    override val filterExpression = "ga:pagePath=~^/stillinger/stilling"
+    override val filterExpression = "ga:pagePath=~^/stillinger/stilling/"
 
-    override fun toStatisticsDto(row: ReportRow): StatisticsDto<AdStatisticsDto> {
+    override fun toStatisticsDto(row: ReportRow): AdStatisticsDto {
         return AdStatisticsDto(
             pageViews = row.getMetric().first().toInt(),
             averageTimeOnPage = listOf(row.getMetric().last().toDouble()),
@@ -74,9 +64,9 @@ class DateEntity(
 ) : DimensionEntity<AdStatisticsDto>(googleAnalyticsQuery) {
     override val metricExpressions = listOf("ga:pageviews")
     override val dimensionNames = listOf("ga:pagePath", "ga:date")
-    override val filterExpression = "ga:pagePath=~^/stillinger/stilling"
+    override val filterExpression = "ga:pagePath=~^/stillinger/stilling/"
 
-    override fun toStatisticsDto(row: ReportRow): StatisticsDto<AdStatisticsDto> {
+    override fun toStatisticsDto(row: ReportRow): AdStatisticsDto {
         return AdStatisticsDto(
             dates = listOf(row.dimensions.last()),
             viewsPerDate = listOf(row.getMetric().first().toInt())
@@ -98,7 +88,7 @@ class CandidateEntity(
             "ga:pagePath=~^/kandidater-next/cv\\?kandidatNr;" +
             "ga:pagePath!~^.*........-....-....-....-.............*$"
 
-    override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateStatisticsDto> {
+    override fun toStatisticsDto(row: ReportRow): CandidateStatisticsDto {
         return CandidateStatisticsDto(
             pageViews = row.getMetric().first().toInt()
         )
@@ -126,7 +116,7 @@ class CandidateFilterEntity(
             //trenger ikke denne tror jeg men spiller det safe
             "ga:pagePath!~^.*........-....-....-....-.............*$"
 
-    override fun toStatisticsDto(row: ReportRow): StatisticsDto<CandidateFilterStatisticsDto> {
+    override fun toStatisticsDto(row: ReportRow): CandidateFilterStatisticsDto {
         return CandidateFilterStatisticsDto(
             pageViews = row.getMetric().first().toInt()
         )

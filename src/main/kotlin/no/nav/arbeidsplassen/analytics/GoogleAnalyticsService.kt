@@ -4,6 +4,7 @@ import no.nav.arbeidsplassen.analytics.ad.AdStatisticsRepository
 import no.nav.arbeidsplassen.analytics.candidate.CandidateStatisticsRepository
 import no.nav.arbeidsplassen.analytics.filter.CandidateFilterStatisticsRepository
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
+import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsReport
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -18,30 +19,42 @@ class GoogleAnalyticsService(
     private val googleAnalyticsQuery: GoogleAnalyticsQuery
 ) {
 
-    private fun <T : StatisticsDto<T>> reportsResponseToStatisticsRepo(
+    private fun <T : StatisticsDto<T>> dimensionEntitiesToStatisticsDtoMap(
         startDate: String,
         endDate: String,
         vararg dimensionEntities: DimensionEntity<T>
-    ): MutableMap<String, T> {
-        val statisticsDtoMap = mutableMapOf<String, T>()
-        //kanskje litt mange foreaches
-        dimensionEntities.forEach { dimensionEntity ->
+    ): Map<String, T> {
+        return dimensionEntities.map { dimensionEntity ->
+            val list = mutableListOf<GoogleAnalyticsReport>()
+            var pageToken: String? = "init"
             dimensionEntity.setDateRange(startDate, endDate)
-            while (dimensionEntity.nextPage()) {
-                dimensionEntity.rows.forEach { row ->
-                    val path = dimensionEntity.getKey(row)
-                    path.forEach { key ->
-                        statisticsDtoMap[key] = dimensionEntity.toStatisticsDto(row) mergeWith statisticsDtoMap[key]
-                    }
-                }
+            while (pageToken != null) {
+                list.add(dimensionEntity.getGoogleAnalyticsReport(pageToken))
+                pageToken = list.last().nextPageToken
             }
+            dimensionEntity.something(list)
+        }.reduce { acc, map -> acc.mergeEm(map) }
+    }
+
+    private fun <T : StatisticsDto<T>> DimensionEntity<T>.something(list: List<GoogleAnalyticsReport>): Map<String, T> {
+        val ting = list.flatMap {googleAnalyticsReport ->
+            googleAnalyticsReport.rows
         }
-        return statisticsDtoMap
+        return ting.map {row ->
+            getKey(row).map { it to toStatisticsDto(row) }
+        }.flatten().groupBy ({it.first}, {it.second})
+            .mapValues { (_, values) -> values.reduce { acc, statisticsDto ->  acc.mergeWith(statisticsDto)}}
+    }
+
+    private fun <T: StatisticsDto<T>> Map<String, T>.mergeEm(other: Map<String, T>): Map<String, T> {
+        return (this.asSequence() + other.asSequence())
+            .groupBy ({it.key}, {it.value})
+            .mapValues { (_, values) -> values.reduce { acc, statisticsDto -> acc.mergeWith(statisticsDto)} }
     }
 
     @PostConstruct
     private fun initializeRepo() {
-        val UUIDToAdDtoMap = reportsResponseToStatisticsRepo(
+        val UUIDToAdDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
             ReferralEntity(googleAnalyticsQuery),
@@ -49,14 +62,14 @@ class GoogleAnalyticsService(
         )
         adStatisticsRepository.updateUUIDToAdStatisticsDtoMap(UUIDToAdDtoMap)
 
-        val UUIDToCandidateDtoMap = reportsResponseToStatisticsRepo(
+        val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
             CandidateEntity(googleAnalyticsQuery)
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
-        val UUIDToCandidateFilterDtoMap = reportsResponseToStatisticsRepo(
+        val UUIDToCandidateFilterDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
             CandidateFilterEntity(googleAnalyticsQuery)
@@ -70,7 +83,7 @@ class GoogleAnalyticsService(
     //kanskje fixeddelay/fixedrate istedet for cron
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Oslo")
     private fun scheduledRepoUpdate() {
-        val UUIDToAdDtoMap = reportsResponseToStatisticsRepo(
+        val UUIDToAdDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
             ReferralEntity(googleAnalyticsQuery),
@@ -78,14 +91,14 @@ class GoogleAnalyticsService(
         )
         adStatisticsRepository.updateUUIDToAdStatisticsDtoMap(UUIDToAdDtoMap)
 
-        val UUIDToCandidateDtoMap = reportsResponseToStatisticsRepo(
+        val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
             CandidateEntity(googleAnalyticsQuery)
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
-        val UUIDToCandidateFilterDtoMap = reportsResponseToStatisticsRepo(
+        val UUIDToCandidateFilterDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
             CandidateFilterEntity(googleAnalyticsQuery)
