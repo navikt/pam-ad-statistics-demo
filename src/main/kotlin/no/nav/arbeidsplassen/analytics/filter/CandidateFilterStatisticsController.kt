@@ -17,7 +17,7 @@ class CandidateFilterStatisticsController(
         @RequestParam(value = "filterValue", required = false) filterValue: String?
     ): StatisticsDto<*>? {
         return filterValue?.let { filterValue ->
-            val UUID = "${filterName.toLowerCase()}=${filterValue.toLowerCase()}"
+            val UUID = "${filterName.toLowerCase()}=${filterValue}"
             return candidateFilterStatisticsRepository.getCandidateFilterStatisticsDtoFromUUID(UUID)
         } ?: candidateFilterStatisticsRepository.getCandidateFilterSummaryDtoFromFilterName(filterName)
     }

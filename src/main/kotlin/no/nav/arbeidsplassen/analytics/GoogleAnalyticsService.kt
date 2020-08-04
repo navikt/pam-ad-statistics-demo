@@ -48,6 +48,7 @@ class GoogleAnalyticsService(
 
     @PostConstruct
     private fun initializeRepo() {
+
         val UUIDToAdDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",

@@ -6,8 +6,11 @@ import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
 import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
 import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsReport
+import java.net.URLDecoder
 
-abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalyticsQuery: GoogleAnalyticsQuery) {
+abstract class DimensionEntity<T : StatisticsDto<T>>(
+    private val googleAnalyticsQuery: GoogleAnalyticsQuery
+) {
     var rows = listOf<ReportRow>()
     abstract val metricExpressions: List<String>
     abstract val dimensionNames: List<String>
@@ -38,7 +41,8 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(private val googleAnalytics
     fun googleAnalyticsReportsToStatisticsDtoMap(listOfGoogleAnalyticsReportsRows: List<ReportRow>): Map<String, T> {
         return listOfGoogleAnalyticsReportsRows.map { row ->
             getKey(row).map { it to toStatisticsDto(row) }
-        }.flatten().groupBy({ it.first }, { it.second })
+        }.flatten()
+            .groupBy({ dtoMapEntry -> dtoMapEntry.first }, { dtoMapEntry -> dtoMapEntry.second })
             .mapValues { (_, values) -> values.reduce { acc, statisticsDto -> acc.mergeWith(statisticsDto) } }
     }
 }
@@ -128,12 +132,12 @@ class CandidateFilterEntity(
     }
 
     override fun getKey(row: ReportRow): List<String> {
-        return queryStringToKey(row.dimensions.first().split("/").last())
+        return queryStringToKey(row.dimensions.first())
     }
 
     private fun queryStringToKey(queryString: String): List<String> {
         val pathAndQueries = queryString.split("?")
-        return if (pathAndQueries.first() == "kandidater") {
+        return if (pathAndQueries.first() == "/kandidater") {
             val queryNameAndValues = pathAndQueries.last().split("&").last().split("=")
             listOf(
                 nameAndValueToString(queryNameAndValues.first(), queryNameAndValues.last().split("_").last())
@@ -149,7 +153,9 @@ class CandidateFilterEntity(
     }
 
     private fun nameAndValueToString(name: String, value: String): String {
-        return "${name.toLowerCase()}=${value.toLowerCase()}"
+        return URLDecoder.decode(name.toLowerCase(), "UTF-8") +
+            "=" +
+            URLDecoder.decode(value.toLowerCase(), "UTF-8")
     }
 }
 

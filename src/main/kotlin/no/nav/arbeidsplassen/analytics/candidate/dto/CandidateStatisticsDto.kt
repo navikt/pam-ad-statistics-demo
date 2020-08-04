@@ -9,4 +9,5 @@ class CandidateStatisticsDto(
         CandidateStatisticsDto(
             pageViews = this.pageViews + other.pageViews
         )
+
 }

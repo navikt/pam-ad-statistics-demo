@@ -18,7 +18,7 @@ class CandidateFilterStatisticsRepository {
     fun getCandidateFilterStatisticsDtoFromUUID(UUID: String) = UUIDToCandidateFilterStatisticsDtoMap[UUID]
 
     fun getCandidateFilterSummaryDtoFromFilterName(filterName: String): StatisticsDto<CandidateFilterSummaryDto> {
-        val filterNameMap = UUIDToCandidateFilterStatisticsDtoMap.filterKeys { it.startsWith(filterName) }
+        val filterNameMap = UUIDToCandidateFilterStatisticsDtoMap.filterKeys { it.startsWith("${filterName}=") }
         var candidateFilterSummaryDto = CandidateFilterSummaryDto()
         filterNameMap.forEach { (k, v) ->
             candidateFilterSummaryDto = candidateFilterSummaryDto mergeWith toCandidateFilterSummaryDto(k, v)
@@ -34,5 +34,11 @@ class CandidateFilterStatisticsRepository {
             pageViews = listOf(dto.pageViews),
             filterValues = listOf(key.split("=").last())
         )
+    }
+
+    fun prettyprint() {
+        UUIDToCandidateFilterStatisticsDtoMap.forEach { (k, v) ->
+            println("$k = ${v.pageViews}")
+        }
     }
 }

@@ -20,4 +20,5 @@ class AdStatisticsDto(
             dates = this.dates + other.dates,
             viewsPerDate = this.viewsPerDate + other.viewsPerDate
         )
+
 }
