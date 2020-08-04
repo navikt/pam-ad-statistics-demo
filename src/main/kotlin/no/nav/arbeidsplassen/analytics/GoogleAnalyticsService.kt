@@ -60,7 +60,8 @@ class GoogleAnalyticsService(
         val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
-            CandidateEntity(googleAnalyticsQuery)
+            CandidateEntity(googleAnalyticsQuery),
+            CandidateShortlistEntity(googleAnalyticsQuery)
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
@@ -89,7 +90,8 @@ class GoogleAnalyticsService(
         val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
-            CandidateEntity(googleAnalyticsQuery)
+            CandidateEntity(googleAnalyticsQuery),
+            CandidateShortlistEntity(googleAnalyticsQuery)
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
