@@ -18,7 +18,7 @@ class CandidateFilterStatisticsController(
     ): StatisticsDto<*>? {
         return filterValue?.let { filterValue ->
             val UUID = "${filterName.toLowerCase()}=${filterValue}"
-            return candidateFilterStatisticsRepository.getCandidateFilterStatisticsDtoFromUUID(UUID)
-        } ?: candidateFilterStatisticsRepository.getCandidateFilterSummaryDtoFromFilterName(filterName)
+            return candidateFilterStatisticsRepository.getCandidateFilterStatisticsDto(UUID)
+        } ?: candidateFilterStatisticsRepository.getCandidateFilterSummaryDto(filterName)
     }
 }

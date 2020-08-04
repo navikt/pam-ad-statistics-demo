@@ -40,10 +40,12 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(
 
     fun googleAnalyticsReportsToStatisticsDtoMap(listOfGoogleAnalyticsReportsRows: List<ReportRow>): Map<String, T> {
         return listOfGoogleAnalyticsReportsRows.map { row ->
-            getKey(row).map { it to toStatisticsDto(row) }
+            getKey(row).map { key -> key to toStatisticsDto(row) }
         }.flatten()
             .groupBy({ dtoMapEntry -> dtoMapEntry.first }, { dtoMapEntry -> dtoMapEntry.second })
-            .mapValues { (_, values) -> values.reduce { acc, statisticsDto -> acc.mergeWith(statisticsDto) } }
+            .mapValues { (_, values) ->
+                values.reduce { acc, statisticsDto -> acc.mergeWith(statisticsDto) }
+            }
     }
 }
 

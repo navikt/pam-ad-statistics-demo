@@ -11,5 +11,4 @@ class CandidateFilterSummaryDto(
             pageViews = this.pageViews + other.pageViews,
             filterValues = this.filterValues + other.filterValues
         )
-
 }

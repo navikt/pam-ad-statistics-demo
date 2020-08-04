@@ -16,6 +16,6 @@ class AdStatisticsController(
     fun getAdStatisticsData(
         @RequestParam(value = "adID", required = true) UUID: String
     ): AdStatisticsDto? {
-        return adStatisticsRepository.getAdStatisticsDtoFromUUID(UUID)
+        return adStatisticsRepository.getAdStatisticsDto(UUID)
     }
 }

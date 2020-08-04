@@ -11,7 +11,7 @@ class CandidateStatisticsRepository {
         this.UUIDToCandidateStatisticsDtoMap = UUIDToStatisticsDtoMap
     }
 
-    fun getCandidateStatisticsDtoFromUUID(UUID: String) = UUIDToCandidateStatisticsDtoMap[UUID]
+    fun getCandidateStatisticsDto(UUID: String) = UUIDToCandidateStatisticsDtoMap[UUID]
 
     //debugging purposes
     fun prettyPrint() {

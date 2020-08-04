@@ -9,5 +9,4 @@ class CandidateFilterStatisticsDto(
         CandidateFilterStatisticsDto(
             pageViews = this.pageViews + other.pageViews
         )
-
 }
