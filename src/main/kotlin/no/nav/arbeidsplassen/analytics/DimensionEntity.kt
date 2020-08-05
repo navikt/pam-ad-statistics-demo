@@ -4,19 +4,15 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import no.nav.arbeidsplassen.analytics.ad.dto.AdStatisticsDto
 import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
 import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
-import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsQuery
-import no.nav.arbeidsplassen.analytics.googleapi.GoogleAnalyticsReport
 import java.net.URLDecoder
 
-abstract class DimensionEntity<T : StatisticsDto<T>>(
-    private val googleAnalyticsQuery: GoogleAnalyticsQuery
-) {
+abstract class DimensionEntity<T : StatisticsDto<T>> {
     var rows = listOf<ReportRow>()
     abstract val metricExpressions: List<String>
     abstract val dimensionNames: List<String>
     abstract val filterExpression: String
-    private var startDate = "1DaysAgo"
-    private var endDate = "today"
+    var startDate = "1DaysAgo"
+    var endDate = "today"
 
     abstract fun toStatisticsDto(row: ReportRow): T
 
@@ -25,17 +21,6 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(
     fun setDateRange(startDate: String, endDate: String) {
         this.startDate = startDate
         this.endDate = endDate
-    }
-
-    fun getGoogleAnalyticsReport(pageToken: String): GoogleAnalyticsReport {
-        return googleAnalyticsQuery.getGoogleAnalyticsReport(
-            metricExpressions = metricExpressions,
-            dimensionNames = dimensionNames,
-            filterExpression = filterExpression,
-            pageToken = pageToken,
-            startDate = startDate,
-            endDate = endDate
-        )
     }
 
     fun googleAnalyticsReportsToStatisticsDtoMap(listOfGoogleAnalyticsReportsRows: List<ReportRow>): Map<String, T> {
@@ -49,9 +34,7 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(
     }
 }
 
-class ReferralEntity(
-    googleAnalyticsQuery: GoogleAnalyticsQuery
-) : DimensionEntity<AdStatisticsDto>(googleAnalyticsQuery) {
+class ReferralEntity : DimensionEntity<AdStatisticsDto>() {
     override val metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage")
     override val dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
     override val filterExpression = "ga:pagePath=~^/stillinger/stilling/"
@@ -70,9 +53,7 @@ class ReferralEntity(
     }
 }
 
-class DateEntity(
-    googleAnalyticsQuery: GoogleAnalyticsQuery
-) : DimensionEntity<AdStatisticsDto>(googleAnalyticsQuery) {
+class DateEntity : DimensionEntity<AdStatisticsDto>() {
     override val metricExpressions = listOf("ga:pageviews")
     override val dimensionNames = listOf("ga:pagePath", "ga:date")
     override val filterExpression = "ga:pagePath=~^/stillinger/stilling/"
@@ -89,9 +70,7 @@ class DateEntity(
     }
 }
 
-class CandidateEntity(
-    googleAnalyticsQuery: GoogleAnalyticsQuery
-) : DimensionEntity<CandidateStatisticsDto>(googleAnalyticsQuery) {
+class CandidateEntity : DimensionEntity<CandidateStatisticsDto>() {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
@@ -116,9 +95,7 @@ class CandidateEntity(
     }
 }
 
-class CandidateShortlistEntity(
-    googleAnalyticsQuery: GoogleAnalyticsQuery
-) : DimensionEntity<CandidateStatisticsDto>(googleAnalyticsQuery) {
+class CandidateShortlistEntity : DimensionEntity<CandidateStatisticsDto>() {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
@@ -138,9 +115,7 @@ class CandidateShortlistEntity(
     }
 }
 
-class CandidateFilterEntity(
-    googleAnalyticsQuery: GoogleAnalyticsQuery
-) : DimensionEntity<CandidateFilterStatisticsDto>(googleAnalyticsQuery) {
+class CandidateFilterEntity : DimensionEntity<CandidateFilterStatisticsDto>() {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
@@ -183,6 +158,7 @@ class CandidateFilterEntity(
     }
 }
 
+//Metrics is a list of metrics for each requested daterange, since we only use one daterange I just take the first one
 private fun ReportRow.getMetric() = metrics.first().getValues()
 
 

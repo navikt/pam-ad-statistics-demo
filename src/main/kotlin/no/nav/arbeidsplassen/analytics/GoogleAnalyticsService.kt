@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
-//not a huge fan of having the googleAnalyticsQuery go through GoogleAnalyticsService to reach DimensionEntity
 class GoogleAnalyticsService(
     private val adStatisticsRepository: AdStatisticsRepository,
     private val candidateStatisticsRepository: CandidateStatisticsRepository,
@@ -32,7 +31,7 @@ class GoogleAnalyticsService(
             var pageToken: String? = "init"
             dimensionEntity.setDateRange(startDate, endDate)
             while (pageToken != null) {
-                val googleAnalyticsReport = dimensionEntity.getGoogleAnalyticsReport(pageToken)
+                val googleAnalyticsReport = googleAnalyticsQuery.getGoogleAnalyticsReport(dimensionEntity, pageToken)
                 listOfGoogleAnalyticsReportsRows += googleAnalyticsReport.rows
                 pageToken = googleAnalyticsReport.nextPageToken
             }
@@ -62,25 +61,27 @@ class GoogleAnalyticsService(
         val UUIDToAdDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
-            ReferralEntity(googleAnalyticsQuery),
-            DateEntity(googleAnalyticsQuery)
+            ReferralEntity(),
+            DateEntity()
         )
         adStatisticsRepository.updateUUIDToAdStatisticsDtoMap(UUIDToAdDtoMap)
-
+        /*
         val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
-            CandidateEntity(googleAnalyticsQuery),
-            CandidateShortlistEntity(googleAnalyticsQuery)
+            CandidateEntity(),
+            CandidateShortlistEntity()
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
         val UUIDToCandidateFilterDtoMap = dimensionEntitiesToStatisticsDtoMap(
             "1DaysAgo",
             "today",
-            CandidateFilterEntity(googleAnalyticsQuery)
+            CandidateFilterEntity()
         )
         candidateFilterStatisticsRepository.updateUUIDToCandidateFilterStatisticsDtoMap(UUIDToCandidateFilterDtoMap)
+
+         */
 
         logger.info("Repositories have been updated")
     }

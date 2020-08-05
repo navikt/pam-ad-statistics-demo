@@ -15,6 +15,8 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRequest
 import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
+import no.nav.arbeidsplassen.analytics.DimensionEntity
+import no.nav.arbeidsplassen.analytics.StatisticsDto
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.File
@@ -47,9 +49,9 @@ class GoogleAnalyticsQuery(
         metricExpressions: List<String>,
         dimensionNames: List<String>,
         filterExpression: String,
-        pageToken: String?,
         startDate: String,
-        endDate: String
+        endDate: String,
+        pageToken: String?
     ): GetReportsResponse {
 
         val dateRange = DateRange().apply {
@@ -75,21 +77,17 @@ class GoogleAnalyticsQuery(
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
     }
 
-    fun getGoogleAnalyticsReport(
-        metricExpressions: List<String>,
-        dimensionNames: List<String>,
-        filterExpression: String,
-        pageToken: String?,
-        startDate: String,
-        endDate: String
+    fun <T: StatisticsDto<T>> getGoogleAnalyticsReport(
+        dimensionEntity: DimensionEntity<T>,
+        pageToken: String?
     ): GoogleAnalyticsReport {
         val reportsResponse = analyticsReporting.getReportsResponse(
-            metricExpressions,
-            dimensionNames,
-            filterExpression,
-            pageToken,
-            startDate,
-            endDate
+            dimensionEntity.metricExpressions,
+            dimensionEntity.dimensionNames,
+            dimensionEntity.filterExpression,
+            dimensionEntity.startDate,
+            dimensionEntity.endDate,
+            pageToken
         )
         return GoogleAnalyticsReport(
             rows = reportsResponse.getReport().data.rows,

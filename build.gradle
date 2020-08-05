@@ -31,11 +31,16 @@ dependencies {
 
     implementation 'com.google.apis:google-api-services-analyticsreporting:v4-rev174-1.25.0'
     implementation 'com.google.http-client:google-http-client-gson:1.19.0'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.11.1'
 
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.6.0"
 }
 
 mainClassName = "no.nav.arbeidsplassen.analytics.ApplicationKt"
+
+test {
+    useJUnitPlatform()
+}
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
