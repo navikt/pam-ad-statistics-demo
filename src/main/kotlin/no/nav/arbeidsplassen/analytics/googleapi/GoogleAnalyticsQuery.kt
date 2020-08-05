@@ -12,6 +12,7 @@ import com.google.api.services.analyticsreporting.v4.model.GetReportsRequest
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse
 import com.google.api.services.analyticsreporting.v4.model.Metric
 import com.google.api.services.analyticsreporting.v4.model.ReportRequest
+import com.google.api.services.analyticsreporting.v4.model.ReportRow
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import org.springframework.beans.factory.annotation.Value
@@ -63,6 +64,7 @@ class GoogleAnalyticsQuery(
             .setDateRanges(listOf(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
+            .setSamplingLevel("LARGE")
             .setFiltersExpression(filterExpression)
             .setPageSize(pagesize)
 
@@ -73,21 +75,25 @@ class GoogleAnalyticsQuery(
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
     }
 
-    fun getReportsResponse(
+    fun getGoogleAnalyticsReport(
         metricExpressions: List<String>,
         dimensionNames: List<String>,
         filterExpression: String,
         pageToken: String?,
         startDate: String,
         endDate: String
-    ): GetReportsResponse {
-        return analyticsReporting.getReportsResponse(
+    ): GoogleAnalyticsReport {
+        val reportsResponse = analyticsReporting.getReportsResponse(
             metricExpressions,
             dimensionNames,
             filterExpression,
             pageToken,
             startDate,
             endDate
+        )
+        return GoogleAnalyticsReport(
+            rows = reportsResponse.getReport().data.rows,
+            nextPageToken = reportsResponse.getReport().nextPageToken
         )
     }
 
@@ -97,3 +103,11 @@ class GoogleAnalyticsQuery(
         private val JSON_FACTORY = GsonFactory.getDefaultInstance()
     }
 }
+
+//only works when sending non-batched requests a.k.a one request per report
+private fun GetReportsResponse.getReport() = reports.first()
+
+data class GoogleAnalyticsReport(
+    val rows: List<ReportRow>,
+    val nextPageToken: String?
+)

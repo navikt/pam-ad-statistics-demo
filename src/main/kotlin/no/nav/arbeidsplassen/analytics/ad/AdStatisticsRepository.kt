@@ -11,5 +11,5 @@ class AdStatisticsRepository {
         this.UUIDToAdStatisticsDtoMap = UUIDToStatisticsDtoMap
     }
 
-    fun getAdStatisticsDtoFromUUID(UUID: String) = UUIDToAdStatisticsDtoMap[UUID]
+    fun getAdStatisticsDto(UUID: String) = UUIDToAdStatisticsDtoMap[UUID]
 }
