@@ -116,6 +116,28 @@ class CandidateEntity(
     }
 }
 
+class CandidateShortlistEntity(
+    googleAnalyticsQuery: GoogleAnalyticsQuery
+) : DimensionEntity<CandidateStatisticsDto>(googleAnalyticsQuery) {
+    override val metricExpressions = listOf("ga:uniquePageviews")
+    override val dimensionNames = listOf("ga:pagePath")
+    override val filterExpression =
+        "ga:pagePath=~^/kandidater/lister/detaljer/.*/cv/"
+
+    override fun toStatisticsDto(row: ReportRow): CandidateStatisticsDto {
+        return CandidateStatisticsDto(
+            pageViewsFromShortlist = row.getMetric().first().toInt()
+        )
+    }
+
+    override fun getKey(row: ReportRow): List<String> {
+        return listOf(
+            row.dimensions.first()
+                .split("/").last()
+        )
+    }
+}
+
 class CandidateFilterEntity(
     googleAnalyticsQuery: GoogleAnalyticsQuery
 ) : DimensionEntity<CandidateFilterStatisticsDto>(googleAnalyticsQuery) {
