@@ -32,6 +32,7 @@ class GoogleAnalyticsService(
             dimensionEntity.setDateRange(startDate, endDate)
             while (pageToken != null) {
                 val googleAnalyticsReport = googleAnalyticsQuery.getGoogleAnalyticsReport(dimensionEntity, pageToken)
+                println(googleAnalyticsReport.rows.first())
                 listOfGoogleAnalyticsReportsRows += googleAnalyticsReport.rows
                 pageToken = googleAnalyticsReport.nextPageToken
             }
@@ -59,15 +60,15 @@ class GoogleAnalyticsService(
         val logger: Logger = LoggerFactory.getLogger(GoogleAnalyticsService::class.java)
 
         val UUIDToAdDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "1DaysAgo",
+            "5DaysAgo",
             "today",
             ReferralEntity(),
             DateEntity()
         )
         adStatisticsRepository.updateUUIDToAdStatisticsDtoMap(UUIDToAdDtoMap)
-        /*
+
         val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "1DaysAgo",
+            "5DaysAgo",
             "today",
             CandidateEntity(),
             CandidateShortlistEntity()
@@ -75,13 +76,13 @@ class GoogleAnalyticsService(
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
         val UUIDToCandidateFilterDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "1DaysAgo",
+            "5DaysAgo",
             "today",
             CandidateFilterEntity()
         )
         candidateFilterStatisticsRepository.updateUUIDToCandidateFilterStatisticsDtoMap(UUIDToCandidateFilterDtoMap)
 
-         */
+
 
         logger.info("Repositories have been updated")
     }

@@ -77,7 +77,7 @@ class GoogleAnalyticsQuery(
         return reports().batchGet(GetReportsRequest().setReportRequests(listOf(request))).execute()
     }
 
-    fun <T: StatisticsDto<T>> getGoogleAnalyticsReport(
+    fun <T : StatisticsDto<T>> getGoogleAnalyticsReport(
         dimensionEntity: DimensionEntity<T>,
         pageToken: String?
     ): GoogleAnalyticsReport {

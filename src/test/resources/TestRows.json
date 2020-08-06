@@ -1,3 +1,13 @@
-[
-  {"dimensions":["test", "20200804"], "metrics":[ {"values":["123"]} ] }
-]
+{
+  "dimensions": [
+    "/testpath",
+    "27081997"
+  ],
+  "metrics": [
+    {
+      "values": [
+        "2"
+      ]
+    }
+  ]
+}
