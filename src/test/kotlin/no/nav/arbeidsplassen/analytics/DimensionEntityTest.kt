@@ -1,5 +1,6 @@
 package no.nav.arbeidsplassen.analytics
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.api.services.analyticsreporting.v4.model.DateRangeValues
 import com.google.api.services.analyticsreporting.v4.model.ReportRow
@@ -13,19 +14,24 @@ class EntityTest {
     @Test
     fun `Test that DateEntity returns the correct DTO for a given row`() {
 
-        val testReportRow = mapper.readValue(
+        val testReportRows = mapper.readValue(
             EntityTest::class.java.getResource("/TestRows.json"),
-            ReportRow::class.java
+            object : TypeReference<List<ReportRow>>() {}
         )
-        testReportRow.metrics = mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
-        val expected = DateEntity().toStatisticsDto(testReportRow)
-        assertEquals(
-            expected.dates,
-            listOf("27081997")
-        )
-        assertEquals(
-            expected.viewsPerDate,
-            listOf(2)
-        )
+        var count = 0
+        testReportRows.forEach {testReportRow ->
+            count+=1
+            testReportRow.metrics = mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
+            val expected = DateEntity().toStatisticsDto(testReportRow)
+            assertEquals(
+                expected.dates,
+                listOf("$count".repeat(8))
+            )
+            assertEquals(
+                expected.viewsPerDate,
+                listOf(count)
+            )
+        }
+
     }
 }

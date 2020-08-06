@@ -1,13 +1,23 @@
-{
+[{
   "dimensions": [
-    "/testpath",
-    "27081997"
+    "/testpath1",
+    "11111111"
   ],
-  "metrics": [
-    {
+  "metrics": [{
+    "values": [
+      "1"
+    ]
+  }]
+},
+  {
+    "dimensions": [
+      "/testpath2",
+      "22222222"
+    ],
+    "metrics": [{
       "values": [
         "2"
       ]
-    }
-  ]
-}
+    }]
+  }
+]
