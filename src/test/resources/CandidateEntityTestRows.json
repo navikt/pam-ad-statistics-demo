@@ -1,0 +1,26 @@
+[
+  {
+    "dimensions": [
+      "/kandidater/cv/testpath1"
+    ],
+    "metrics": [
+      {
+        "values": [
+          "1"
+        ]
+      }
+    ]
+  },
+  {
+    "dimensions": [
+      "/kandidater/cv/testpath2"
+    ],
+    "metrics": [
+      {
+        "values": [
+          "2"
+        ]
+      }
+    ]
+  }
+]

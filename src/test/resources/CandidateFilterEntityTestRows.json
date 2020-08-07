@@ -1,0 +1,26 @@
+[
+  {
+    "dimensions": [
+      "/kandidater?kompetanser=1_2+2&geografiList=3"
+    ],
+    "metrics": [
+      {
+        "values": [
+          "1"
+        ]
+      }
+    ]
+  },
+  {
+    "dimensions": [
+      "/kandidater-next?kompetanser=2+2_4&geografiList=6"
+    ],
+    "metrics": [
+      {
+        "values": [
+          "2"
+        ]
+      }
+    ]
+  }
+]

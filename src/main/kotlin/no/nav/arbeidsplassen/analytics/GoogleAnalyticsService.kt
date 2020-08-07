@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
-//not a huge fan of having the googleAnalyticsQuery go through GoogleAnalyticsService to reach DimensionEntity
 class GoogleAnalyticsService(
     private val adStatisticsRepository: AdStatisticsRepository,
     private val candidateStatisticsRepository: CandidateStatisticsRepository,
@@ -23,16 +22,13 @@ class GoogleAnalyticsService(
 ) {
 
     private fun <T : StatisticsDto<T>> dimensionEntitiesToStatisticsDtoMap(
-        startDate: String,
-        endDate: String,
         vararg dimensionEntities: DimensionEntity<T>
     ): Map<String, T> {
         return dimensionEntities.map { dimensionEntity ->
             val listOfGoogleAnalyticsReportsRows = mutableListOf<ReportRow>()
             var pageToken: String? = "init"
-            dimensionEntity.setDateRange(startDate, endDate)
             while (pageToken != null) {
-                val googleAnalyticsReport = dimensionEntity.getGoogleAnalyticsReport(pageToken)
+                val googleAnalyticsReport = googleAnalyticsQuery.getGoogleAnalyticsReport(dimensionEntity, pageToken)
                 listOfGoogleAnalyticsReportsRows += googleAnalyticsReport.rows
                 pageToken = googleAnalyticsReport.nextPageToken
             }
@@ -60,27 +56,23 @@ class GoogleAnalyticsService(
         val logger: Logger = LoggerFactory.getLogger(GoogleAnalyticsService::class.java)
 
         val UUIDToAdDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "1DaysAgo",
-            "today",
-            ReferralEntity(googleAnalyticsQuery),
-            DateEntity(googleAnalyticsQuery)
+            ReferralEntity("5DaysAgo", "today"),
+            DateEntity("5DaysAgo", "today")
         )
         adStatisticsRepository.updateUUIDToAdStatisticsDtoMap(UUIDToAdDtoMap)
 
         val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "1DaysAgo",
-            "today",
-            CandidateEntity(googleAnalyticsQuery),
-            CandidateShortlistEntity(googleAnalyticsQuery)
+            CandidateEntity("5DaysAgo", "today"),
+            CandidateShortlistEntity("5DaysAgo", "today")
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
         val UUIDToCandidateFilterDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "1DaysAgo",
-            "today",
-            CandidateFilterEntity(googleAnalyticsQuery)
+            CandidateFilterEntity("5DaysAgo", "today")
         )
         candidateFilterStatisticsRepository.updateUUIDToCandidateFilterStatisticsDtoMap(UUIDToCandidateFilterDtoMap)
+
+
 
         logger.info("Repositories have been updated")
     }

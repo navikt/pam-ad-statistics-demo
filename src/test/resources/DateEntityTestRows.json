@@ -1,0 +1,28 @@
+[
+  {
+    "dimensions": [
+      "/stillinger/stilling/testpath1",
+      "11111111"
+    ],
+    "metrics": [
+      {
+        "values": [
+          "1"
+        ]
+      }
+    ]
+  },
+  {
+    "dimensions": [
+      "/stillinger/stilling/testpath2",
+      "22222222"
+    ],
+    "metrics": [
+      {
+        "values": [
+          "2"
+        ]
+      }
+    ]
+  }
+]
