@@ -7,8 +7,8 @@ import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
 import java.net.URLDecoder
 
 abstract class DimensionEntity<T : StatisticsDto<T>>(
-    val startDate: String = "1DaysAgo",
-    val endDate: String = "today"
+    val startDate: String,
+    val endDate: String
 ) {
     var rows = listOf<ReportRow>()
     abstract val metricExpressions: List<String>
@@ -31,8 +31,8 @@ abstract class DimensionEntity<T : StatisticsDto<T>>(
 }
 
 class ReferralEntity(
-    startDate: String,
-    endDate: String
+    startDate: String = "1DaysAgo",
+    endDate: String = "today"
 ) : DimensionEntity<AdStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews", "ga:avgTimeOnPage")
     override val dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
@@ -53,8 +53,8 @@ class ReferralEntity(
 }
 
 class DateEntity(
-    startDate: String,
-    endDate: String
+    startDate: String = "1DaysAgo",
+    endDate: String = "today"
 ) : DimensionEntity<AdStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath", "ga:date")
@@ -73,8 +73,8 @@ class DateEntity(
 }
 
 class CandidateEntity(
-    startDate: String,
-    endDate: String
+    startDate: String = "1DaysAgo",
+    endDate: String = "today"
 ) : DimensionEntity<CandidateStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
@@ -101,8 +101,8 @@ class CandidateEntity(
 }
 
 class CandidateShortlistEntity(
-    startDate: String,
-    endDate: String
+    startDate: String = "1DaysAgo",
+    endDate: String = "today"
 ) : DimensionEntity<CandidateStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
@@ -124,8 +124,8 @@ class CandidateShortlistEntity(
 }
 
 class CandidateFilterEntity(
-    startDate: String,
-    endDate: String
+    startDate: String = "1DaysAgo",
+    endDate: String = "today"
 ) : DimensionEntity<CandidateFilterStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
@@ -148,10 +148,10 @@ class CandidateFilterEntity(
     private fun queryStringToKey(queryString: String): List<String> {
         val pathAndQueries = queryString.split("?")
         return if (pathAndQueries.first() == "/kandidater") {
-            val queryNameAndValues = pathAndQueries.last().split("&").last().split("=")
-            listOf(
+            pathAndQueries.last().split("&").map { filter ->
+                val queryNameAndValues = filter.split("=")
                 nameAndValueToString(queryNameAndValues.first(), queryNameAndValues.last().split("_").last())
-            )
+            }
         } else {
             pathAndQueries.last().split("&").flatMap { filter ->
                 val queryNameAndValues = filter.split("=")

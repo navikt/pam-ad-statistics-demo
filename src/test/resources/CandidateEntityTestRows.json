@@ -1,8 +1,7 @@
 [
   {
     "dimensions": [
-      "/testpath1",
-      "11111111"
+      "/stillinger/stilling/testpath1"
     ],
     "metrics": [
       {
@@ -14,8 +13,7 @@
   },
   {
     "dimensions": [
-      "/testpath2",
-      "22222222"
+      "/stillinger/stilling/testpath2"
     ],
     "metrics": [
       {

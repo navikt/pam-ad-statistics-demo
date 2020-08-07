@@ -19,9 +19,10 @@ class EntityTest {
             object : TypeReference<List<ReportRow>>() {}
         )
         var count = 0
-        testReportRows.forEach {testReportRow ->
-            count+=1
-            testReportRow.metrics = mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
+        testReportRows.forEach { testReportRow ->
+            count += 1
+            testReportRow.metrics =
+                mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
             val expected = DateEntity().toStatisticsDto(testReportRow)
             assertEquals(
                 expected.dates,
@@ -36,7 +37,6 @@ class EntityTest {
                 listOf("testpath${count}")
             )
         }
-
     }
 
     @Test
@@ -47,9 +47,10 @@ class EntityTest {
             object : TypeReference<List<ReportRow>>() {}
         )
         var count = 0
-        testReportRows.forEach {testReportRow ->
-            count+=1
-            testReportRow.metrics = mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
+        testReportRows.forEach { testReportRow ->
+            count += 1
+            testReportRow.metrics =
+                mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
             val expected = DateEntity().toStatisticsDto(testReportRow)
             assertEquals(
                 expected.dates,
@@ -64,6 +65,77 @@ class EntityTest {
                 listOf("testpath${count}")
             )
         }
+    }
 
+    @Test
+    fun `Test that CandidateEntity returns the correct DTO and key for a given row`() {
+
+        val testReportRows = mapper.readValue(
+            EntityTest::class.java.getResource("/CandidateEntityTestRows.json"),
+            object : TypeReference<List<ReportRow>>() {}
+        )
+        var count = 0
+        testReportRows.forEach { testReportRow ->
+            count += 1
+            testReportRow.metrics =
+                mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
+            val expected = CandidateEntity().toStatisticsDto(testReportRow)
+            assertEquals(
+                expected.pageViews,
+                count
+            )
+            assertEquals(
+                DateEntity().getKey(testReportRow),
+                listOf("testpath${count}")
+            )
+        }
+    }
+
+    @Test
+    fun `Test that CandidateShortlistEntity returns the correct DTO and key for a given row`() {
+
+        val testReportRows = mapper.readValue(
+            EntityTest::class.java.getResource("/CandidateEntityTestRows.json"),
+            object : TypeReference<List<ReportRow>>() {}
+        )
+        var count = 0
+        testReportRows.forEach { testReportRow ->
+            count += 1
+            testReportRow.metrics =
+                mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
+            val expected = CandidateShortlistEntity().toStatisticsDto(testReportRow)
+            assertEquals(
+                expected.pageViews,
+                count
+            )
+            assertEquals(
+                DateEntity().getKey(testReportRow),
+                listOf("testpath${count}")
+            )
+        }
+    }
+
+    @Test
+    fun `Test that CandidateFilterEntity returns the correct DTO and key for a given row`() {
+
+        val testReportRows = mapper.readValue(
+            EntityTest::class.java.getResource("/CandidateEntityTestRows.json"),
+            object : TypeReference<List<ReportRow>>() {}
+        )
+        var count = 0
+        testReportRows.forEach { testReportRow ->
+            count += 1
+            testReportRow.metrics =
+                mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
+            val expected = CandidateEntity().toStatisticsDto(testReportRow)
+            assertEquals(
+                expected.pageViews,
+                count
+            )
+            assertEquals(
+                DateEntity().getKey(testReportRow),
+                listOf("testpath${count}")
+            )
+        }
     }
 }
