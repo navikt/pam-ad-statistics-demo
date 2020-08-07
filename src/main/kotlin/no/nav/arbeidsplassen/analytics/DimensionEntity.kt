@@ -6,6 +6,7 @@ import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
 import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
 import java.net.URLDecoder
 
+//might want to change these class names
 abstract class DimensionEntity<T : StatisticsDto<T>>(
     val startDate: String,
     val endDate: String
