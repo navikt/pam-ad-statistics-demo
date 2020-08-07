@@ -22,17 +22,13 @@ class GoogleAnalyticsService(
 ) {
 
     private fun <T : StatisticsDto<T>> dimensionEntitiesToStatisticsDtoMap(
-        startDate: String,
-        endDate: String,
         vararg dimensionEntities: DimensionEntity<T>
     ): Map<String, T> {
         return dimensionEntities.map { dimensionEntity ->
             val listOfGoogleAnalyticsReportsRows = mutableListOf<ReportRow>()
             var pageToken: String? = "init"
-            dimensionEntity.setDateRange(startDate, endDate)
             while (pageToken != null) {
                 val googleAnalyticsReport = googleAnalyticsQuery.getGoogleAnalyticsReport(dimensionEntity, pageToken)
-                println(googleAnalyticsReport.rows.first())
                 listOfGoogleAnalyticsReportsRows += googleAnalyticsReport.rows
                 pageToken = googleAnalyticsReport.nextPageToken
             }
@@ -60,25 +56,19 @@ class GoogleAnalyticsService(
         val logger: Logger = LoggerFactory.getLogger(GoogleAnalyticsService::class.java)
 
         val UUIDToAdDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "5DaysAgo",
-            "today",
-            ReferralEntity(),
-            DateEntity()
+            ReferralEntity("5DaysAgo", "today"),
+            DateEntity("5DaysAgo", "today")
         )
         adStatisticsRepository.updateUUIDToAdStatisticsDtoMap(UUIDToAdDtoMap)
 
         val UUIDToCandidateDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "5DaysAgo",
-            "today",
-            CandidateEntity(),
-            CandidateShortlistEntity()
+            CandidateEntity("5DaysAgo", "today"),
+            CandidateShortlistEntity("5DaysAgo", "today")
         )
         candidateStatisticsRepository.updateUUIDToCandidateStatisticsDtoMap(UUIDToCandidateDtoMap)
 
         val UUIDToCandidateFilterDtoMap = dimensionEntitiesToStatisticsDtoMap(
-            "5DaysAgo",
-            "today",
-            CandidateFilterEntity()
+            CandidateFilterEntity("5DaysAgo", "today")
         )
         candidateFilterStatisticsRepository.updateUUIDToCandidateFilterStatisticsDtoMap(UUIDToCandidateFilterDtoMap)
 

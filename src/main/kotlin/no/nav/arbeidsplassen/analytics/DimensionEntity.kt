@@ -6,22 +6,18 @@ import no.nav.arbeidsplassen.analytics.candidate.dto.CandidateStatisticsDto
 import no.nav.arbeidsplassen.analytics.filter.dto.CandidateFilterStatisticsDto
 import java.net.URLDecoder
 
-abstract class DimensionEntity<T : StatisticsDto<T>> {
+abstract class DimensionEntity<T : StatisticsDto<T>>(
+    val startDate: String = "1DaysAgo",
+    val endDate: String = "today"
+) {
     var rows = listOf<ReportRow>()
     abstract val metricExpressions: List<String>
     abstract val dimensionNames: List<String>
     abstract val filterExpression: String
-    var startDate = "1DaysAgo"
-    var endDate = "today"
 
     abstract fun toStatisticsDto(row: ReportRow): T
 
     abstract fun getKey(row: ReportRow): List<String>
-
-    fun setDateRange(startDate: String, endDate: String) {
-        this.startDate = startDate
-        this.endDate = endDate
-    }
 
     fun googleAnalyticsReportsToStatisticsDtoMap(listOfGoogleAnalyticsReportsRows: List<ReportRow>): Map<String, T> {
         return listOfGoogleAnalyticsReportsRows.map { row ->
@@ -34,8 +30,11 @@ abstract class DimensionEntity<T : StatisticsDto<T>> {
     }
 }
 
-class ReferralEntity : DimensionEntity<AdStatisticsDto>() {
-    override val metricExpressions = listOf("ga:pageviews", "ga:avgTimeOnPage")
+class ReferralEntity(
+    startDate: String,
+    endDate: String
+) : DimensionEntity<AdStatisticsDto>(startDate, endDate) {
+    override val metricExpressions = listOf("ga:uniquePageviews", "ga:avgTimeOnPage")
     override val dimensionNames = listOf("ga:pagePath", "ga:fullReferrer")
     override val filterExpression = "ga:pagePath=~^/stillinger/stilling/"
 
@@ -53,8 +52,11 @@ class ReferralEntity : DimensionEntity<AdStatisticsDto>() {
     }
 }
 
-class DateEntity : DimensionEntity<AdStatisticsDto>() {
-    override val metricExpressions = listOf("ga:pageviews")
+class DateEntity(
+    startDate: String,
+    endDate: String
+) : DimensionEntity<AdStatisticsDto>(startDate, endDate) {
+    override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath", "ga:date")
     override val filterExpression = "ga:pagePath=~^/stillinger/stilling/"
 
@@ -70,7 +72,10 @@ class DateEntity : DimensionEntity<AdStatisticsDto>() {
     }
 }
 
-class CandidateEntity : DimensionEntity<CandidateStatisticsDto>() {
+class CandidateEntity(
+    startDate: String,
+    endDate: String
+) : DimensionEntity<CandidateStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
@@ -95,7 +100,10 @@ class CandidateEntity : DimensionEntity<CandidateStatisticsDto>() {
     }
 }
 
-class CandidateShortlistEntity : DimensionEntity<CandidateStatisticsDto>() {
+class CandidateShortlistEntity(
+    startDate: String,
+    endDate: String
+) : DimensionEntity<CandidateStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =
@@ -115,7 +123,10 @@ class CandidateShortlistEntity : DimensionEntity<CandidateStatisticsDto>() {
     }
 }
 
-class CandidateFilterEntity : DimensionEntity<CandidateFilterStatisticsDto>() {
+class CandidateFilterEntity(
+    startDate: String,
+    endDate: String
+) : DimensionEntity<CandidateFilterStatisticsDto>(startDate, endDate) {
     override val metricExpressions = listOf("ga:uniquePageviews")
     override val dimensionNames = listOf("ga:pagePath")
     override val filterExpression =

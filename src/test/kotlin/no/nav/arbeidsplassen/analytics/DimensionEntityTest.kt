@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test
 
 class EntityTest {
 
-    val mapper = jacksonObjectMapper()
+    private val mapper = jacksonObjectMapper()
 
     @Test
-    fun `Test that DateEntity returns the correct DTO for a given row`() {
+    fun `Test that ReferralEntity returns the correct DTO and key for a given row`() {
 
         val testReportRows = mapper.readValue(
-            EntityTest::class.java.getResource("/TestRows.json"),
+            EntityTest::class.java.getResource("/DateEntityTestRows.json"),
             object : TypeReference<List<ReportRow>>() {}
         )
         var count = 0
@@ -30,6 +30,38 @@ class EntityTest {
             assertEquals(
                 expected.viewsPerDate,
                 listOf(count)
+            )
+            assertEquals(
+                DateEntity().getKey(testReportRow),
+                listOf("testpath${count}")
+            )
+        }
+
+    }
+
+    @Test
+    fun `Test that DateEntity returns the correct DTO and key for a given row`() {
+
+        val testReportRows = mapper.readValue(
+            EntityTest::class.java.getResource("/DateEntityTestRows.json"),
+            object : TypeReference<List<ReportRow>>() {}
+        )
+        var count = 0
+        testReportRows.forEach {testReportRow ->
+            count+=1
+            testReportRow.metrics = mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
+            val expected = DateEntity().toStatisticsDto(testReportRow)
+            assertEquals(
+                expected.dates,
+                listOf("$count".repeat(8))
+            )
+            assertEquals(
+                expected.viewsPerDate,
+                listOf(count)
+            )
+            assertEquals(
+                DateEntity().getKey(testReportRow),
+                listOf("testpath${count}")
             )
         }
 
