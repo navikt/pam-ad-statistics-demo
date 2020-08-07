@@ -1,7 +1,7 @@
 [
   {
     "dimensions": [
-      "/stillinger/stilling/testpath1"
+      "/kandidater/cv/testpath1"
     ],
     "metrics": [
       {
@@ -13,7 +13,7 @@
   },
   {
     "dimensions": [
-      "/stillinger/stilling/testpath2"
+      "/kandidater/cv/testpath2"
     ],
     "metrics": [
       {

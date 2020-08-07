@@ -1,7 +1,7 @@
 [
   {
     "dimensions": [
-      "/stillinger/stilling/testpath1"
+      "/kandidater?kompetanser=1_2+2&geografiList=3"
     ],
     "metrics": [
       {
@@ -13,7 +13,7 @@
   },
   {
     "dimensions": [
-      "/stillinger/stilling/testpath2"
+      "/kandidater-next?kompetanser=2+2_4&geografiList=6"
     ],
     "metrics": [
       {

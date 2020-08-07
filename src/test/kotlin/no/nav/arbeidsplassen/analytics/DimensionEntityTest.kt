@@ -105,7 +105,7 @@ class EntityTest {
                 mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
             val expected = CandidateShortlistEntity().toStatisticsDto(testReportRow)
             assertEquals(
-                expected.pageViews,
+                expected.pageViewsFromShortlist,
                 count
             )
             assertEquals(
@@ -119,22 +119,33 @@ class EntityTest {
     fun `Test that CandidateFilterEntity returns the correct DTO and key for a given row`() {
 
         val testReportRows = mapper.readValue(
-            EntityTest::class.java.getResource("/CandidateEntityTestRows.json"),
+            EntityTest::class.java.getResource("/CandidateFilterEntityTestRows.json"),
             object : TypeReference<List<ReportRow>>() {}
         )
-        var count = 0
-        testReportRows.forEach { testReportRow ->
-            count += 1
-            testReportRow.metrics =
-                mutableListOf(mapper.convertValue(testReportRow.metrics.first(), DateRangeValues::class.java))
-            val expected = CandidateEntity().toStatisticsDto(testReportRow)
+        testReportRows.first().apply {
+            this.metrics =
+            mutableListOf(mapper.convertValue(this.metrics.first(), DateRangeValues::class.java))
+            val expected = CandidateFilterEntity().toStatisticsDto(this)
             assertEquals(
                 expected.pageViews,
-                count
+                1
             )
             assertEquals(
-                DateEntity().getKey(testReportRow),
-                listOf("testpath${count}")
+                CandidateFilterEntity().getKey(this),
+                listOf("kompetanser=2 2", "geografilist=3")
+            )
+        }
+        testReportRows.last().apply {
+            this.metrics =
+                mutableListOf(mapper.convertValue(this.metrics.first(), DateRangeValues::class.java))
+            val expected = CandidateFilterEntity().toStatisticsDto(this)
+            assertEquals(
+                expected.pageViews,
+                2
+            )
+            assertEquals(
+                CandidateFilterEntity().getKey(this),
+                listOf("kompetanser=2 2", "kompetanser=4", "geografilist=6")
             )
         }
     }
